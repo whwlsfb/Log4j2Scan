@@ -45,6 +45,11 @@ public class Ceye implements IDnslog {
     }
 
     @Override
+    public boolean flushCache() {
+        return true;
+    }
+
+    @Override
     public boolean getState() {
         return true;
     }

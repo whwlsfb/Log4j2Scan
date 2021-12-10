@@ -4,26 +4,36 @@ import burp.*;
 import burp.dnslog.IDnslog;
 import burp.dnslog.platform.Ceye;
 import burp.dnslog.platform.DnslogCN;
+import burp.utils.ScanItem;
 import burp.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Log4j2Scanner implements IScannerCheck {
     private BurpExtender parent;
     private IExtensionHelpers helper;
-    private IDnslog dnslog = new DnslogCN();
+    private IDnslog dnslog;
 
 
     public Log4j2Scanner(final BurpExtender newParent) {
         this.parent = newParent;
         this.helper = newParent.helpers;
+        this.dnslog = new DnslogCN();
+        if (this.dnslog.getState()) {
+            parent.stdout.println("Log4j2Scan loaded successfully!\r\n");
+        } else {
+            parent.stdout.println("Dnslog init failed!\r\n");
+        }
     }
 
     @Override
     public List<IScanIssue> doPassiveScan(IHttpRequestResponse baseRequestResponse) {
         IRequestInfo req = this.parent.helpers.analyzeRequest(baseRequestResponse);
         List<IScanIssue> issues = new ArrayList<>();
+        Map<String, ScanItem> domainMap = new HashMap<>();
         byte[] rawRequest = baseRequestResponse.getRequest();
         for (IParameter param :
                 req.getParameters()) {
@@ -50,19 +60,29 @@ public class Log4j2Scanner implements IScannerCheck {
                 if (hasModify) {
                     IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
                     tmpReq.getResponse();
-                    boolean hasIssue = dnslog.CheckResult(tmpDomain);
-                    if (hasIssue) {
-                        issues.add(new Log4j2Issue(baseRequestResponse.getHttpService(),
-                                req.getUrl(),
-                                new IHttpRequestResponse[]{baseRequestResponse, tmpReq},
-                                "Log4j2 RCE Detected",
-                                String.format("Vulnerable param is \"%s\" in %s.", param.getName(), getTypeName(param.getType())),
-                                "High"));
-                    }
+                    domainMap.put(tmpDomain, new ScanItem(param, tmpReq));
+
                 }
             } catch (Exception ex) {
                 System.out.println(ex);
             }
+        }
+        if (dnslog.flushCache()) {
+            for (Map.Entry<String, ScanItem> domainItem :
+                    domainMap.entrySet()) {
+                ScanItem item = domainItem.getValue();
+                boolean hasIssue = dnslog.CheckResult(domainItem.getKey());
+                if (hasIssue) {
+                    issues.add(new Log4j2Issue(baseRequestResponse.getHttpService(),
+                            req.getUrl(),
+                            new IHttpRequestResponse[]{baseRequestResponse, item.TmpRequest},
+                            "Log4j2 RCE Detected",
+                            String.format("Vulnerable param is \"%s\" in %s.", item.Param.getName(), getTypeName(item.Param.getType())),
+                            "High"));
+                }
+            }
+        } else {
+            parent.stdout.println("get dnslog result failed!\r\n");
         }
         return issues;
     }

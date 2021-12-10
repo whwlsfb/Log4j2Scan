@@ -1,11 +1,14 @@
 package burp.utils;
 
 
+import burp.IBurpExtenderCallbacks;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 public class Utils {
+    public  static IBurpExtenderCallbacks Callback;
     private static MessageDigest md;
     private static Random rand = new Random();
 

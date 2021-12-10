@@ -7,5 +7,7 @@ public interface IDnslog {
 
     boolean CheckResult(String domain);
 
+    boolean flushCache();
+
     boolean getState();
 }
