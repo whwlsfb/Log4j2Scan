@@ -28,8 +28,8 @@ public class DnslogCN implements IDnslog {
             List<Cookie> cookies = cookieStore.get(url.host());
             return cookies != null ? cookies : new ArrayList<Cookie>();
         }
-    }).connectTimeout(3000, TimeUnit.SECONDS).
-            callTimeout(3000, TimeUnit.SECONDS).build();
+    }).connectTimeout(30, TimeUnit.SECONDS).
+            callTimeout(30, TimeUnit.SECONDS).build();
     String platformUrl = "http://www.dnslog.cn/";
     String rootDomain = "";
 
