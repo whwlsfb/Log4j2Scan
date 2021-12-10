@@ -12,7 +12,7 @@ import java.util.List;
 public class Log4j2Scanner implements IScannerCheck {
     private BurpExtender parent;
     private IExtensionHelpers helper;
-    private IDnslog dnslog = new Ceye();
+    private IDnslog dnslog = new DnslogCN();
 
 
     public Log4j2Scanner(final BurpExtender newParent) {
