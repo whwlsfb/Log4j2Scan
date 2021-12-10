@@ -12,7 +12,7 @@ public class BurpExtender implements IBurpExtender, ITab {
     public IBurpExtenderCallbacks callbacks;
     public PrintWriter stdout;
     public PrintWriter stderr;
-    public String version = "0.2.1";
+    public String version = "0.2.2";
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
