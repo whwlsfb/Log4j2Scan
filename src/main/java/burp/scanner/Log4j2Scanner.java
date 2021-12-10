@@ -7,6 +7,7 @@ import burp.dnslog.platform.DnslogCN;
 import burp.utils.ScanItem;
 import burp.utils.Utils;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,8 @@ public class Log4j2Scanner implements IScannerCheck {
                     case IParameter.PARAM_URL:
                     case IParameter.PARAM_BODY:
                     case IParameter.PARAM_COOKIE:
-                        exp = helper.urlEncode(exp);
+                        exp = URLEncoder.encode(exp,"utf-8");
+                        parent.stdout.println(req.getUrl());
                         IParameter newParam = parent.helpers.buildParameter(param.getName(), exp, param.getType());
                         tmpRawRequest = parent.helpers.updateParameter(rawRequest, newParam);
                         hasModify = true;
@@ -64,7 +66,7 @@ public class Log4j2Scanner implements IScannerCheck {
 
                 }
             } catch (Exception ex) {
-                System.out.println(ex);
+                parent.stdout.println(ex);
             }
         }
         if (dnslog.flushCache()) {
