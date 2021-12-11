@@ -16,6 +16,7 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 ##### v0.4
 1. 加入RC1补丁的绕过poc。
 
+# 效果截图
 
 ![](screenshots/detected.png)
 
