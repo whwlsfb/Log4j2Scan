@@ -19,7 +19,8 @@ public class POC2 implements IPOC {
         int confusionCount = Utils.GetRandomNumber(1, 4);
         int[] confustionCharIndexs = Utils.getRandomIndex(confusionCount, _chars.length);
         for (int i = 0; i < _chars.length; i++) {
-            if (Arrays.binarySearch(confustionCharIndexs, i) > -1) {
+            int finalI = i;
+            if (Arrays.stream(confustionCharIndexs).anyMatch(c -> c == finalI)) {
                 result.append(confusionChar(_chars[i]));
             } else {
                 result.append(_chars[i]);
