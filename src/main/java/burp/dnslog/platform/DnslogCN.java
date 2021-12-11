@@ -75,10 +75,10 @@ public class DnslogCN implements IDnslog {
         try {
             Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "getrecords.php").build()).execute();
             dnsLogResultCache = resp.body().string();
-            Utils.Callback.printOutput(String.format("Got Dnslog Result: \r\n%s", dnsLogResultCache));
+            Utils.Callback.printOutput(String.format("Got Dnslog Result OK!: %s", dnsLogResultCache));
             return true;
         } catch (Exception ex) {
-            Utils.Callback.printOutput(String.format("Get Dnslog Result Failed: \r\n%s", ex.getMessage()));
+            Utils.Callback.printOutput(String.format("Get Dnslog Result Failed!: %s", ex.getMessage()));
             return false;
         }
     }

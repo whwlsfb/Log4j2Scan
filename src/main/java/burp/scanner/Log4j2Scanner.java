@@ -7,6 +7,7 @@ import burp.dnslog.platform.DnslogCN;
 import burp.poc.IPOC;
 import burp.poc.impl.*;
 import burp.utils.HttpHeader;
+import burp.utils.HttpUtils;
 import burp.utils.ScanItem;
 import burp.utils.Utils;
 
@@ -45,6 +46,22 @@ public class Log4j2Scanner implements IScannerCheck {
             "Contact"
     };
 
+    private final String[] STATIC_FILE_EXT = new String[]{
+            "png",
+            "jpg",
+            "gif",
+            "pdf",
+            "bmp",
+            "js",
+            "css",
+            "ico",
+            "woff",
+            "woff2",
+            "ttf",
+            "otf",
+            "ttc"
+    };
+
     private IPOC[] pocs;
 
     public Log4j2Scanner(final BurpExtender newParent) {
@@ -69,17 +86,24 @@ public class Log4j2Scanner implements IScannerCheck {
     public List<IScanIssue> doPassiveScan(IHttpRequestResponse baseRequestResponse) {
         IRequestInfo req = this.parent.helpers.analyzeRequest(baseRequestResponse);
         List<IScanIssue> issues = new ArrayList<>();
-        Map<String, ScanItem> domainMap = new HashMap<>();
-        domainMap.putAll(paramsFuzz(baseRequestResponse, req));
-        domainMap.putAll(headerFuzz(baseRequestResponse, req));
-        try {
-            Thread.sleep(2000); //sleep 2s, wait for network delay.
-        } catch (InterruptedException e) {
-            parent.stdout.println(e);
+        if (!isStaticFile(req.getUrl().toString())) {
+            parent.stdout.println(String.format("Scanning: %s", req.getUrl()));
+            Map<String, ScanItem> domainMap = new HashMap<>();
+            domainMap.putAll(paramsFuzz(baseRequestResponse, req));
+            domainMap.putAll(headerFuzz(baseRequestResponse, req));
+            try {
+                Thread.sleep(2000); //sleep 2s, wait for network delay.
+            } catch (InterruptedException e) {
+                parent.stdout.println(e);
+            }
+            issues.addAll(finalCheck(baseRequestResponse, req, domainMap));
+            parent.stdout.println(String.format("Scan complete: %s", req.getUrl()));
         }
-        issues.addAll(finalCheck(baseRequestResponse, req, domainMap));
-        parent.stdout.println(String.format("Scan complete: %s", req.getUrl()));
         return issues;
+    }
+
+    private boolean isStaticFile(String url) {
+        return Arrays.stream(STATIC_FILE_EXT).anyMatch(s -> s.equalsIgnoreCase(HttpUtils.getUrlFileExt(url)));
     }
 
     private Map<String, ScanItem> headerFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
@@ -126,7 +150,6 @@ public class Log4j2Scanner implements IScannerCheck {
     private Map<String, ScanItem> paramsFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
         Map<String, ScanItem> domainMap = new HashMap<>();
         byte[] rawRequest = baseRequestResponse.getRequest();
-        parent.stdout.println(String.format("Scanning: %s", req.getUrl()));
         for (IParameter param :
                 req.getParameters()) {
             for (IPOC poc : pocs) {

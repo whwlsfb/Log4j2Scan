@@ -15,4 +15,9 @@ public class HttpUtils {
         requestBuilder.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:" + fakeFirefoxVersion + ".0) Gecko/20100101 Firefox/" + fakeFirefoxVersion + ".0");
         return requestBuilder.cacheControl(NoCache);
     }
+
+    public static String getUrlFileExt(String url) {
+        String pureUrl = url.substring(0, url.contains("?") ? url.indexOf("?") : url.length());
+        return (pureUrl.lastIndexOf(".") > -1 ? pureUrl.substring(pureUrl.lastIndexOf(".") + 1) : "").toLowerCase();
+    }
 }
