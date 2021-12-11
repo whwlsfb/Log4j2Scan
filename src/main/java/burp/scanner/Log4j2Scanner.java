@@ -29,6 +29,12 @@ public class Log4j2Scanner implements IScannerCheck {
         }
     }
 
+    public String urlencodeForTomcat(String exp) {
+        exp = exp.replace("{", "%7b");
+        exp = exp.replace("}", "%7d");
+        return exp;
+    }
+
     @Override
     public List<IScanIssue> doPassiveScan(IHttpRequestResponse baseRequestResponse) {
         IRequestInfo req = this.parent.helpers.analyzeRequest(baseRequestResponse);
@@ -47,6 +53,7 @@ public class Log4j2Scanner implements IScannerCheck {
                     case IParameter.PARAM_BODY:
                     case IParameter.PARAM_COOKIE:
                         exp = helper.urlEncode(exp);
+                        exp = urlencodeForTomcat(exp);
                         IParameter newParam = parent.helpers.buildParameter(param.getName(), exp, param.getType());
                         tmpRawRequest = parent.helpers.updateParameter(rawRequest, newParam);
                         hasModify = true;
@@ -64,8 +71,13 @@ public class Log4j2Scanner implements IScannerCheck {
 
                 }
             } catch (Exception ex) {
-                System.out.println(ex);
+                parent.stdout.println(ex);
             }
+        }
+        try {
+            Thread.sleep(2000); //sleep 2s, wait for network delay.
+        } catch (InterruptedException e) {
+            parent.stdout.println(e);
         }
         if (dnslog.flushCache()) {
             for (Map.Entry<String, ScanItem> domainItem :
