@@ -34,12 +34,16 @@ public class Log4j2Scanner implements IScannerCheck {
             "X-Remote-Addr",
             "X-Forwarded-For",
             "X-Originating-IP",
+            "Originating-IP",
             "CF-Connecting_IP",
             "True-Client-IP",
             "X-Forwarded-For",
             "Originating-IP",
             "X-Real-IP",
-            "Forwarded"
+            "Forwarded",
+            "X-Api-Version",
+            "X-Wap-Profile",
+            "Contact"
     };
 
     public Log4j2Scanner(final BurpExtender newParent) {
