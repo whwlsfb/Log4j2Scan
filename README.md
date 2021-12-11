@@ -6,9 +6,16 @@
 
 Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 
-v0.4版本已加入RC1补丁的绕过poc。
+暂只支持Url、Cookie、POST(x-www-form-urlencoded)、Header类型的参数fuzz。
 
-暂只支持Url、Cookie、POST(x-www-form-urlencoded)类型的参数fuzz。
+# ChangeLog
+
+### 2021/12/11
+##### v0.5
+1. 加入Header的fuzz功能。
+##### v0.4
+1. 加入RC1补丁的绕过poc。
+
 
 ![](screenshots/detected.png)
 
