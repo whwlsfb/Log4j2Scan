@@ -59,7 +59,28 @@ public class Log4j2Scanner implements IScannerCheck {
             "woff2",
             "ttf",
             "otf",
-            "ttc"
+            "ttc",
+            "svg",
+            "psd",
+            "exe",
+            "zip",
+            "rar",
+            "7z",
+            "msi",
+            "tar",
+            "gz",
+            "mp3",
+            "mp4",
+            "mkv",
+            "swf",
+            "psd",
+            "xls",
+            "xlsx",
+            "doc",
+            "docx",
+            "ppt",
+            "pptx",
+            "iso"
     };
 
     private IPOC[] pocs;
@@ -114,11 +135,9 @@ public class Log4j2Scanner implements IScannerCheck {
             List<String> guessHeaders = new ArrayList(Arrays.asList(HEADER_GUESS));
             for (int i = 1; i < headers.size(); i++) {
                 HttpHeader header = new HttpHeader(headers.get(i));
-                if (!Arrays.stream(HEADER_BLACKLIST).anyMatch(h -> h.equalsIgnoreCase(header.Name))) {
+                if (Arrays.stream(HEADER_BLACKLIST).noneMatch(h -> h.equalsIgnoreCase(header.Name))) {
                     List<String> needSkipheader = guessHeaders.stream().filter(h -> h.equalsIgnoreCase(header.Name)).collect(Collectors.toList());
-                    for (String headerName : needSkipheader) {
-                        guessHeaders.remove(headerName);
-                    }
+                    needSkipheader.forEach(guessHeaders::remove);
                     for (IPOC poc : pocs) {
                         List<String> tmpHeaders = new ArrayList<>(headers);
                         String tmpDomain = dnslog.getNewDomain();
@@ -130,8 +149,7 @@ public class Log4j2Scanner implements IScannerCheck {
                     }
                 }
             }
-            for (String headerName :
-                    guessHeaders) {
+            for (String headerName : guessHeaders) {
                 for (IPOC poc : pocs) {
                     List<String> tmpHeaders = new ArrayList<>(headers);
                     String tmpDomain = dnslog.getNewDomain();
@@ -150,8 +168,7 @@ public class Log4j2Scanner implements IScannerCheck {
     private Map<String, ScanItem> paramsFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
         Map<String, ScanItem> domainMap = new HashMap<>();
         byte[] rawRequest = baseRequestResponse.getRequest();
-        for (IParameter param :
-                req.getParameters()) {
+        for (IParameter param : req.getParameters()) {
             for (IPOC poc : pocs) {
                 try {
                     String tmpDomain = dnslog.getNewDomain();
