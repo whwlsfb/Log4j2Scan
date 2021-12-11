@@ -6,6 +6,8 @@
 
 Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 
+v0.4版本已加入RC1补丁的绕过poc。
+
 暂只支持Url、Cookie、POST(x-www-form-urlencoded)类型的参数fuzz。
 
 ![](screenshots/detected.png)
