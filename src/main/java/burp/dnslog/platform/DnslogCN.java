@@ -60,7 +60,7 @@ public class DnslogCN implements IDnslog {
             public void run() {
                 flushCache();
             }
-        }, 0, 30 * 1000); //30s
+        }, 0, 2 * 60 * 1000); //2min
     }
 
     @Override

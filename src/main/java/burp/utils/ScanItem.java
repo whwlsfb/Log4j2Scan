@@ -9,6 +9,14 @@ public class ScanItem {
         this.TmpRequest = tmpreq;
     }
 
+    public ScanItem(String headerName, IHttpRequestResponse tmpreq) {
+        this.IsHeader = true;
+        this.HeaderName = headerName;
+        this.TmpRequest = tmpreq;
+    }
+
+    public String HeaderName;
+    public boolean IsHeader;
     public IParameter Param;
     public IHttpRequestResponse TmpRequest;
 }

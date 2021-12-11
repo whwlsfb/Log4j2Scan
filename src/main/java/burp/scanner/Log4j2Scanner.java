@@ -6,13 +6,12 @@ import burp.dnslog.platform.Ceye;
 import burp.dnslog.platform.DnslogCN;
 import burp.poc.IPOC;
 import burp.poc.impl.POC2;
+import burp.utils.HttpHeader;
 import burp.utils.ScanItem;
 import burp.utils.Utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class Log4j2Scanner implements IScannerCheck {
     private BurpExtender parent;
@@ -20,6 +19,27 @@ public class Log4j2Scanner implements IScannerCheck {
     private IDnslog dnslog;
     private IPOC poc;
 
+    private final String[] HEADER_BLACKLIST = new String[]{
+            "content-length",
+            "cookie",
+            "host",
+            "content-type"
+    };
+    private final String[] HEADER_GUESS = new String[]{
+            "User-Agent",
+            "Referer",
+            "X-Client-IP",
+            "X-Remote-IP",
+            "X-Remote-Addr",
+            "X-Forwarded-For",
+            "X-Originating-IP",
+            "CF-Connecting_IP",
+            "True-Client-IP",
+            "X-Forwarded-For",
+            "Originating-IP",
+            "X-Real-IP",
+            "Forwarded"
+    };
 
     public Log4j2Scanner(final BurpExtender newParent) {
         this.parent = newParent;
@@ -44,6 +64,53 @@ public class Log4j2Scanner implements IScannerCheck {
         IRequestInfo req = this.parent.helpers.analyzeRequest(baseRequestResponse);
         List<IScanIssue> issues = new ArrayList<>();
         Map<String, ScanItem> domainMap = new HashMap<>();
+        domainMap.putAll(paramsFuzz(baseRequestResponse, req));
+        domainMap.putAll(headerFuzz(baseRequestResponse, req));
+        try {
+            Thread.sleep(2000); //sleep 2s, wait for network delay.
+        } catch (InterruptedException e) {
+            parent.stdout.println(e);
+        }
+        issues.addAll(finalCheck(baseRequestResponse, req, domainMap));
+        parent.stdout.println(String.format("Scan complete: %s", req.getUrl()));
+        return issues;
+    }
+
+    private Map<String, ScanItem> headerFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        List<String> headers = req.getHeaders();
+        Map<String, ScanItem> domainMap = new HashMap<>();
+        byte[] rawRequest = baseRequestResponse.getRequest();
+        List<String> guessHeaders = Arrays.asList(HEADER_GUESS);
+        for (int i = 1; i < headers.size(); i++) {
+            HttpHeader header = new HttpHeader(headers.get(i));
+            if (Arrays.stream(HEADER_BLACKLIST).anyMatch(h -> h.toLowerCase() == header.Name.toLowerCase())) {
+                String[] needSkipheader = (String[]) guessHeaders.stream().filter(h -> h.toLowerCase().equals(header.Name)).toArray();
+                for (String headerName : needSkipheader) {
+                    guessHeaders.remove(headerName);
+                }
+                List<String> tmpHeaders = new ArrayList<>(headers);
+                String tmpDomain = dnslog.getNewDomain();
+                header.Value = poc.generate(tmpDomain);
+                tmpHeaders.set(i, header.toString());
+                byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
+                IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq));
+            }
+        }
+        for (String headerName :
+                guessHeaders) {
+            List<String> tmpHeaders = new ArrayList<>(headers);
+            String tmpDomain = dnslog.getNewDomain();
+            tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
+            byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
+            IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+            domainMap.put(tmpDomain, new ScanItem(headerName, tmpReq));
+        }
+        return domainMap;
+    }
+
+    private Map<String, ScanItem> paramsFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        Map<String, ScanItem> domainMap = new HashMap<>();
         byte[] rawRequest = baseRequestResponse.getRequest();
         parent.stdout.println(String.format("Scanning: %s", req.getUrl()));
         for (IParameter param :
@@ -59,8 +126,8 @@ public class Log4j2Scanner implements IScannerCheck {
                     case IParameter.PARAM_COOKIE:
                         exp = helper.urlEncode(exp);
                         exp = urlencodeForTomcat(exp);
-                        IParameter newParam = parent.helpers.buildParameter(param.getName(), exp, param.getType());
-                        tmpRawRequest = parent.helpers.updateParameter(rawRequest, newParam);
+                        IParameter newParam = helper.buildParameter(param.getName(), exp, param.getType());
+                        tmpRawRequest = helper.updateParameter(rawRequest, newParam);
                         hasModify = true;
                         break;
                     case IParameter.PARAM_JSON:
@@ -79,11 +146,11 @@ public class Log4j2Scanner implements IScannerCheck {
                 parent.stdout.println(ex);
             }
         }
-        try {
-            Thread.sleep(2000); //sleep 2s, wait for network delay.
-        } catch (InterruptedException e) {
-            parent.stdout.println(e);
-        }
+        return domainMap;
+    }
+
+    private List<IScanIssue> finalCheck(IHttpRequestResponse baseRequestResponse, IRequestInfo req, Map<String, ScanItem> domainMap) {
+        List<IScanIssue> issues = new ArrayList<>();
         if (dnslog.flushCache()) {
             for (Map.Entry<String, ScanItem> domainItem :
                     domainMap.entrySet()) {
@@ -94,14 +161,13 @@ public class Log4j2Scanner implements IScannerCheck {
                             req.getUrl(),
                             new IHttpRequestResponse[]{baseRequestResponse, item.TmpRequest},
                             "Log4j2 RCE Detected",
-                            String.format("Vulnerable param is \"%s\" in %s.", item.Param.getName(), getTypeName(item.Param.getType())),
+                            String.format("Vulnerable param is \"%s\" in %s.", item.IsHeader ? item.HeaderName : item.Param.getName(), item.IsHeader ? "Header" : getTypeName(item.Param.getType())),
                             "High"));
                 }
             }
         } else {
             parent.stdout.println("get dnslog result failed!\r\n");
         }
-        parent.stdout.println(String.format("Scan complete: %s", req.getUrl()));
         return issues;
     }
 
