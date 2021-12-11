@@ -7,9 +7,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static burp.utils.HttpUtils.GetDefaultRequest;
@@ -35,6 +35,8 @@ public class DnslogCN implements IDnslog {
     String rootDomain = "";
     String dnsLogResultCache = "";
 
+    Instant lastRequestTime = null;
+
     public DnslogCN() {
         this.initDomain();
     }
@@ -45,9 +47,20 @@ public class DnslogCN implements IDnslog {
             Response resp = client.newCall(GetDefaultRequest(platformUrl + "/getdomain.php").build()).execute();
             rootDomain = resp.body().string();
             Utils.Callback.printOutput(String.format("Domain: %s", rootDomain));
+            startSessionHeartbeat();
         } catch (Exception ex) {
             Utils.Callback.printError("initDomain failed: " + ex.getMessage());
         }
+    }
+
+    private void startSessionHeartbeat() {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                flushCache();
+            }
+        }, 0, 30 * 1000); //30s
     }
 
     @Override
@@ -64,6 +77,7 @@ public class DnslogCN implements IDnslog {
         try {
             Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "getrecords.php").build()).execute();
             dnsLogResultCache = resp.body().string();
+            lastRequestTime = Instant.now();
             return true;
         } catch (Exception ex) {
             return false;

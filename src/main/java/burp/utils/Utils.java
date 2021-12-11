@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 public class Utils {
-    public  static IBurpExtenderCallbacks Callback;
+    public static IBurpExtenderCallbacks Callback;
     private static MessageDigest md;
     private static Random rand = new Random();
 
@@ -16,11 +16,15 @@ public class Utils {
         return rand.nextInt(max - min + 1) + min;
     }
 
+    public static Boolean GetRandomBoolean() {
+        return rand.nextInt(100) > 50;
+    }
+
     public static String GetRandomString(int length) {
-        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < length; i++) {
-            int number = rand.nextInt(62);
+            int number = rand.nextInt(str.length() - 1);
             sb.append(str.charAt(number));
         }
         return sb.toString();
