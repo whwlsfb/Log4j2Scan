@@ -11,6 +11,7 @@ import burp.utils.ScanItem;
 import burp.utils.Utils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Log4j2Scanner implements IScannerCheck {
@@ -79,32 +80,36 @@ public class Log4j2Scanner implements IScannerCheck {
     private Map<String, ScanItem> headerFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
         List<String> headers = req.getHeaders();
         Map<String, ScanItem> domainMap = new HashMap<>();
-        byte[] rawRequest = baseRequestResponse.getRequest();
-        List<String> guessHeaders = Arrays.asList(HEADER_GUESS);
-        for (int i = 1; i < headers.size(); i++) {
-            HttpHeader header = new HttpHeader(headers.get(i));
-            if (Arrays.stream(HEADER_BLACKLIST).anyMatch(h -> h.toLowerCase() == header.Name.toLowerCase())) {
-                String[] needSkipheader = (String[]) guessHeaders.stream().filter(h -> h.toLowerCase().equals(header.Name)).toArray();
-                for (String headerName : needSkipheader) {
-                    guessHeaders.remove(headerName);
+        try {
+            byte[] rawRequest = baseRequestResponse.getRequest();
+            List<String> guessHeaders = new ArrayList(Arrays.asList(HEADER_GUESS));
+            for (int i = 1; i < headers.size(); i++) {
+                HttpHeader header = new HttpHeader(headers.get(i));
+                if (!Arrays.stream(HEADER_BLACKLIST).anyMatch(h -> h.equalsIgnoreCase(header.Name))) {
+                    List<String> needSkipheader = guessHeaders.stream().filter(h -> h.equalsIgnoreCase(header.Name)).collect(Collectors.toList());
+                    for (String headerName : needSkipheader) {
+                        guessHeaders.remove(headerName);
+                    }
+                    List<String> tmpHeaders = new ArrayList<>(headers);
+                    String tmpDomain = dnslog.getNewDomain();
+                    header.Value = poc.generate(tmpDomain);
+                    tmpHeaders.set(i, header.toString());
+                    byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
+                    IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                    domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq));
                 }
+            }
+            for (String headerName :
+                    guessHeaders) {
                 List<String> tmpHeaders = new ArrayList<>(headers);
                 String tmpDomain = dnslog.getNewDomain();
-                header.Value = poc.generate(tmpDomain);
-                tmpHeaders.set(i, header.toString());
+                tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
                 byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
                 IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq));
+                domainMap.put(tmpDomain, new ScanItem(headerName, tmpReq));
             }
-        }
-        for (String headerName :
-                guessHeaders) {
-            List<String> tmpHeaders = new ArrayList<>(headers);
-            String tmpDomain = dnslog.getNewDomain();
-            tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
-            byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
-            IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-            domainMap.put(tmpDomain, new ScanItem(headerName, tmpReq));
+        } catch (Exception ex) {
+            parent.stdout.println(ex);
         }
         return domainMap;
     }

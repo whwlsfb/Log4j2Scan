@@ -5,7 +5,10 @@ import burp.IBurpExtenderCallbacks;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.LinkedHashSet;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
     public static IBurpExtenderCallbacks Callback;
@@ -29,6 +32,11 @@ public class Utils {
         }
         return sb.toString();
     }
+
+    public static int[] getRandomIndex(int size, int max) {
+        return ThreadLocalRandom.current().ints(0, max).distinct().limit(size).toArray();
+    }
+
 
     public static byte[] byteMerger(byte[] bt1, byte[] bt2) {
         byte[] bt3 = new byte[bt1.length + bt2.length];

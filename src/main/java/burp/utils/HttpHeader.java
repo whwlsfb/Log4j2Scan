@@ -8,7 +8,7 @@ public class HttpHeader {
         int headerLength = src.indexOf(':');
         if (headerLength > -1) {
             Name = src.substring(0, headerLength);
-            Value = src.substring(headerLength);
+            Value = src.substring(headerLength + 1).trim();
         } else {
             Name = src;
         }

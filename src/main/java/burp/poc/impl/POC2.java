@@ -3,6 +3,8 @@ package burp.poc.impl;
 import burp.poc.IPOC;
 import burp.utils.Utils;
 
+import java.util.Arrays;
+
 public class POC2 implements IPOC {
     private String confusion() {
         StringBuilder result = new StringBuilder();
@@ -15,18 +17,12 @@ public class POC2 implements IPOC {
     private String confusionChars(String[] _chars) {
         StringBuilder result = new StringBuilder();
         int confusionCount = Utils.GetRandomNumber(1, 4);
-        for (String _char :
-                _chars) {
-            if (confusionCount > 0) {
-                boolean useConfusion = Utils.GetRandomBoolean();
-                if (useConfusion) {
-                    confusionCount--;
-                    result.append(confusionChar(_char));
-                } else {
-                    result.append(_char);
-                }
+        int[] confustionCharIndexs = Utils.getRandomIndex(confusionCount, _chars.length);
+        for (int i = 0; i < _chars.length; i++) {
+            if (Arrays.binarySearch(confustionCharIndexs, i) > -1) {
+                result.append(confusionChar(_chars[i]));
             } else {
-                result.append(_char);
+                result.append(_chars[i]);
             }
         }
         return result.toString();
