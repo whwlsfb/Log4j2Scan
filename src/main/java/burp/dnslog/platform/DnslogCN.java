@@ -16,26 +16,24 @@ import static burp.utils.HttpUtils.GetDefaultRequest;
 
 public class DnslogCN implements IDnslog {
     OkHttpClient client = new OkHttpClient().newBuilder().cookieJar(new CookieJar() {
-        private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
+                private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
 
-        @Override
-        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-            cookieStore.put(url.host(), cookies);
-        }
+                @Override
+                public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                    cookieStore.put(url.host(), cookies);
+                }
 
-        @Override
-        public List<Cookie> loadForRequest(HttpUrl url) {
-            List<Cookie> cookies = cookieStore.get(url.host());
-            return cookies != null ? cookies : new ArrayList<Cookie>();
-        }
-    }).connectTimeout(50, TimeUnit.SECONDS).
+                @Override
+                public List<Cookie> loadForRequest(HttpUrl url) {
+                    List<Cookie> cookies = cookieStore.get(url.host());
+                    return cookies != null ? cookies : new ArrayList<Cookie>();
+                }
+            }).connectTimeout(50, TimeUnit.SECONDS).
             callTimeout(50, TimeUnit.SECONDS).
             readTimeout(3, TimeUnit.MINUTES).build();
     String platformUrl = "http://www.dnslog.cn/";
     String rootDomain = "";
     String dnsLogResultCache = "";
-
-    Instant lastRequestTime = null;
 
     public DnslogCN() {
         this.initDomain();
@@ -77,9 +75,10 @@ public class DnslogCN implements IDnslog {
         try {
             Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "getrecords.php").build()).execute();
             dnsLogResultCache = resp.body().string();
-            lastRequestTime = Instant.now();
+            Utils.Callback.printOutput(String.format("Got Dnslog Result: \r\n%s", dnsLogResultCache));
             return true;
         } catch (Exception ex) {
+            Utils.Callback.printOutput(String.format("Get Dnslog Result Failed: \r\n%s", ex.getMessage()));
             return false;
         }
     }

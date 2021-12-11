@@ -5,7 +5,7 @@ import burp.dnslog.IDnslog;
 import burp.dnslog.platform.Ceye;
 import burp.dnslog.platform.DnslogCN;
 import burp.poc.IPOC;
-import burp.poc.impl.POC2;
+import burp.poc.impl.*;
 import burp.utils.HttpHeader;
 import burp.utils.ScanItem;
 import burp.utils.Utils;
@@ -18,7 +18,6 @@ public class Log4j2Scanner implements IScannerCheck {
     private BurpExtender parent;
     private IExtensionHelpers helper;
     private IDnslog dnslog;
-    private IPOC poc;
 
     private final String[] HEADER_BLACKLIST = new String[]{
             "content-length",
@@ -46,10 +45,12 @@ public class Log4j2Scanner implements IScannerCheck {
             "Contact"
     };
 
+    private IPOC[] pocs;
+
     public Log4j2Scanner(final BurpExtender newParent) {
         this.parent = newParent;
         this.helper = newParent.helpers;
-        this.poc = new POC2();
+        this.pocs = new IPOC[]{new POC1(), new POC2(), new POC3(), new POC4()};
         this.dnslog = new DnslogCN();
         if (this.dnslog.getState()) {
             parent.stdout.println("Log4j2Scan loaded successfully!\r\n");
@@ -94,23 +95,27 @@ public class Log4j2Scanner implements IScannerCheck {
                     for (String headerName : needSkipheader) {
                         guessHeaders.remove(headerName);
                     }
-                    List<String> tmpHeaders = new ArrayList<>(headers);
-                    String tmpDomain = dnslog.getNewDomain();
-                    header.Value = poc.generate(tmpDomain);
-                    tmpHeaders.set(i, header.toString());
-                    byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
-                    IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                    domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq));
+                    for (IPOC poc : pocs) {
+                        List<String> tmpHeaders = new ArrayList<>(headers);
+                        String tmpDomain = dnslog.getNewDomain();
+                        header.Value = poc.generate(tmpDomain);
+                        tmpHeaders.set(i, header.toString());
+                        byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
+                        IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                        domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq));
+                    }
                 }
             }
             for (String headerName :
                     guessHeaders) {
-                List<String> tmpHeaders = new ArrayList<>(headers);
-                String tmpDomain = dnslog.getNewDomain();
-                tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
-                byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
-                IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                domainMap.put(tmpDomain, new ScanItem(headerName, tmpReq));
+                for (IPOC poc : pocs) {
+                    List<String> tmpHeaders = new ArrayList<>(headers);
+                    String tmpDomain = dnslog.getNewDomain();
+                    tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
+                    byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
+                    IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                    domainMap.put(tmpDomain, new ScanItem(headerName, tmpReq));
+                }
             }
         } catch (Exception ex) {
             parent.stdout.println(ex);
@@ -124,35 +129,37 @@ public class Log4j2Scanner implements IScannerCheck {
         parent.stdout.println(String.format("Scanning: %s", req.getUrl()));
         for (IParameter param :
                 req.getParameters()) {
-            try {
-                String tmpDomain = dnslog.getNewDomain();
-                byte[] tmpRawRequest = rawRequest;
-                String exp = poc.generate(tmpDomain);
-                boolean hasModify = false;
-                switch (param.getType()) {
-                    case IParameter.PARAM_URL:
-                    case IParameter.PARAM_BODY:
-                    case IParameter.PARAM_COOKIE:
-                        exp = helper.urlEncode(exp);
-                        exp = urlencodeForTomcat(exp);
-                        IParameter newParam = helper.buildParameter(param.getName(), exp, param.getType());
-                        tmpRawRequest = helper.updateParameter(rawRequest, newParam);
-                        hasModify = true;
-                        break;
-                    case IParameter.PARAM_JSON:
-                    case IParameter.PARAM_XML:
-                    case IParameter.PARAM_MULTIPART_ATTR:
-                    case IParameter.PARAM_XML_ATTR:
-                        //unsupported.
-                }
-                if (hasModify) {
-                    IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                    tmpReq.getResponse();
-                    domainMap.put(tmpDomain, new ScanItem(param, tmpReq));
+            for (IPOC poc : pocs) {
+                try {
+                    String tmpDomain = dnslog.getNewDomain();
+                    byte[] tmpRawRequest = rawRequest;
+                    String exp = poc.generate(tmpDomain);
+                    boolean hasModify = false;
+                    switch (param.getType()) {
+                        case IParameter.PARAM_URL:
+                        case IParameter.PARAM_BODY:
+                        case IParameter.PARAM_COOKIE:
+                            exp = helper.urlEncode(exp);
+                            exp = urlencodeForTomcat(exp);
+                            IParameter newParam = helper.buildParameter(param.getName(), exp, param.getType());
+                            tmpRawRequest = helper.updateParameter(rawRequest, newParam);
+                            hasModify = true;
+                            break;
+                        case IParameter.PARAM_JSON:
+                        case IParameter.PARAM_XML:
+                        case IParameter.PARAM_MULTIPART_ATTR:
+                        case IParameter.PARAM_XML_ATTR:
+                            //unsupported.
+                    }
+                    if (hasModify) {
+                        IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                        tmpReq.getResponse();
+                        domainMap.put(tmpDomain, new ScanItem(param, tmpReq));
 
+                    }
+                } catch (Exception ex) {
+                    parent.stdout.println(ex);
                 }
-            } catch (Exception ex) {
-                parent.stdout.println(ex);
             }
         }
         return domainMap;

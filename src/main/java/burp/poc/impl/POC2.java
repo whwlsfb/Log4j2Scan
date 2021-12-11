@@ -41,6 +41,6 @@ public class POC2 implements IPOC {
 
     @Override
     public String generate(String domain) {
-        return "${" + confusion() + "://" + domain + "/" + Utils.GetRandomNumber(100000, 999999) + "}";
+        return "${" + confusion() + "://" + domain + "/" + Utils.GetRandomString(Utils.GetRandomNumber(2, 5)) + "}";
     }
 }
