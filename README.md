@@ -6,7 +6,7 @@
 
 Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 
-支持多dnslog平台扩展、自动忽略静态文件，漏洞检测暂只支持Url、Cookie、POST(x-www-form-urlencoded)、Header类型的参数。
+支持精确提示漏洞参数、漏洞位置，支持多dnslog平台扩展、自动忽略静态文件，漏洞检测暂只支持Url、Cookie、POST(x-www-form-urlencoded)、Header类型的参数。
 
 # ChangeLog
 ### 2021/12/12
