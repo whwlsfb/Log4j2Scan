@@ -88,7 +88,7 @@ public class Log4j2Scanner implements IScannerCheck {
         this.parent = newParent;
         this.helper = newParent.helpers;
         this.pocs = new IPOC[]{new POC1(), new POC2(), new POC3(), new POC4(), new POC11()};
-        this.backend = new RevSuitRMI("http://192.168.31.10:8899", "192.168.31.10:1099", "bIOMkGsMQ");
+        this.backend = new DnslogCN();
         if (this.backend.getState()) {
             parent.stdout.println("Log4j2Scan loaded successfully!\r\n");
         } else {
