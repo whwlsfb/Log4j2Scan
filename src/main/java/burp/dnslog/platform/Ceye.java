@@ -32,8 +32,8 @@ public class Ceye implements IDnslog {
     @Override
     public boolean CheckResult(String domain) {
         try {
-            Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "v1/records?token=" + token + "&type=dns&filter=" + domain.substring(0, domain.indexOf("."))).build()).execute();
-            JSONObject jObj = JSONObject.parseObject(resp.body().string());
+            Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "v1/records?token=" + token + "&type=dns&filter=" + domain.toLowerCase().substring(0, domain.indexOf("."))).build()).execute();
+            JSONObject jObj = JSONObject.parseObject(resp.body().string().toLowerCase());
             if (jObj.containsKey("data")) {
                 return (((JSONArray) jObj.get("data")).size() > 0);
             }

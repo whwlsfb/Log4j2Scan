@@ -74,7 +74,7 @@ public class DnslogCN implements IDnslog {
     public boolean flushCache() {
         try {
             Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "getrecords.php").build()).execute();
-            dnsLogResultCache = resp.body().string();
+            dnsLogResultCache = resp.body().string().toLowerCase();
             Utils.Callback.printOutput(String.format("Got Dnslog Result OK!: %s", dnsLogResultCache));
             return true;
         } catch (Exception ex) {
@@ -85,7 +85,7 @@ public class DnslogCN implements IDnslog {
 
     @Override
     public boolean CheckResult(String domain) {
-        return dnsLogResultCache.contains(domain);
+        return dnsLogResultCache.contains(domain.toLowerCase());
     }
 
     @Override
