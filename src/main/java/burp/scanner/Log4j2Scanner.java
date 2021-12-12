@@ -1,9 +1,10 @@
 package burp.scanner;
 
 import burp.*;
-import burp.dnslog.IDnslog;
-import burp.dnslog.platform.Ceye;
-import burp.dnslog.platform.DnslogCN;
+import burp.backend.IBackend;
+import burp.backend.platform.Ceye;
+import burp.backend.platform.DnslogCN;
+import burp.backend.platform.RevSuitRMI;
 import burp.poc.IPOC;
 import burp.poc.impl.*;
 import burp.utils.HttpHeader;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 public class Log4j2Scanner implements IScannerCheck {
     private BurpExtender parent;
     private IExtensionHelpers helper;
-    private IDnslog dnslog;
+    private IBackend backend;
 
     private final String[] HEADER_BLACKLIST = new String[]{
             "content-length",
@@ -86,12 +87,12 @@ public class Log4j2Scanner implements IScannerCheck {
     public Log4j2Scanner(final BurpExtender newParent) {
         this.parent = newParent;
         this.helper = newParent.helpers;
-        this.pocs = new IPOC[]{new POC1(), new POC2(), new POC3(), new POC4()};
-        this.dnslog = new DnslogCN();
-        if (this.dnslog.getState()) {
+        this.pocs = new IPOC[]{new POC1(), new POC2(), new POC3(), new POC4(), new POC11()};
+        this.backend = new DnslogCN();
+        if (this.backend.getState()) {
             parent.stdout.println("Log4j2Scan loaded successfully!\r\n");
         } else {
-            parent.stdout.println("Dnslog init failed!\r\n");
+            parent.stdout.println("Backend init failed!\r\n");
         }
     }
 
@@ -136,11 +137,12 @@ public class Log4j2Scanner implements IScannerCheck {
                 if (Arrays.stream(HEADER_BLACKLIST).noneMatch(h -> h.equalsIgnoreCase(header.Name))) {
                     List<String> needSkipheader = guessHeaders.stream().filter(h -> h.equalsIgnoreCase(header.Name)).collect(Collectors.toList());
                     needSkipheader.forEach(guessHeaders::remove);
-                    for (IPOC poc : pocs) {
+                    for (IPOC poc : getSupportedPOCs()) {
                         List<String> tmpHeaders = new ArrayList<>(headers);
-                        String tmpDomain = dnslog.getNewDomain();
+                        String tmpDomain = backend.getNewPayload();
                         header.Value = poc.generate(tmpDomain);
                         tmpHeaders.set(i, header.toString());
+                        Utils.Callback.printOutput(header + "\r\n");
                         byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
                         IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
                         domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq));
@@ -148,9 +150,9 @@ public class Log4j2Scanner implements IScannerCheck {
                 }
             }
             for (String headerName : guessHeaders) {
-                for (IPOC poc : pocs) {
+                for (IPOC poc : getSupportedPOCs()) {
                     List<String> tmpHeaders = new ArrayList<>(headers);
-                    String tmpDomain = dnslog.getNewDomain();
+                    String tmpDomain = backend.getNewPayload();
                     tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
                     byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
                     IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
@@ -163,13 +165,17 @@ public class Log4j2Scanner implements IScannerCheck {
         return domainMap;
     }
 
+    private Collection<IPOC> getSupportedPOCs() {
+        return Arrays.stream(pocs).filter(p -> Arrays.stream(backend.getSupportedPOCTypes()).anyMatch(c -> c == p.getType())).collect(Collectors.toList());
+    }
+
     private Map<String, ScanItem> paramsFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
         Map<String, ScanItem> domainMap = new HashMap<>();
         byte[] rawRequest = baseRequestResponse.getRequest();
         for (IParameter param : req.getParameters()) {
-            for (IPOC poc : pocs) {
+            for (IPOC poc : getSupportedPOCs()) {
                 try {
-                    String tmpDomain = dnslog.getNewDomain();
+                    String tmpDomain = backend.getNewPayload();
                     byte[] tmpRawRequest = rawRequest;
                     String exp = poc.generate(tmpDomain);
                     boolean hasModify = false;
@@ -205,11 +211,11 @@ public class Log4j2Scanner implements IScannerCheck {
 
     private List<IScanIssue> finalCheck(IHttpRequestResponse baseRequestResponse, IRequestInfo req, Map<String, ScanItem> domainMap) {
         List<IScanIssue> issues = new ArrayList<>();
-        if (dnslog.flushCache()) {
+        if (backend.flushCache(domainMap.size())) {
             for (Map.Entry<String, ScanItem> domainItem :
                     domainMap.entrySet()) {
                 ScanItem item = domainItem.getValue();
-                boolean hasIssue = dnslog.CheckResult(domainItem.getKey());
+                boolean hasIssue = backend.CheckResult(domainItem.getKey());
                 if (hasIssue) {
                     issues.add(new Log4j2Issue(baseRequestResponse.getHttpService(),
                             req.getUrl(),
@@ -220,7 +226,7 @@ public class Log4j2Scanner implements IScannerCheck {
                 }
             }
         } else {
-            parent.stdout.println("get dnslog result failed!\r\n");
+            parent.stdout.println("get backend result failed!\r\n");
         }
         return issues;
     }

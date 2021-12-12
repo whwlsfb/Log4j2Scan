@@ -1,20 +1,17 @@
-package burp.dnslog.platform;
+package burp.backend.platform;
 
-import burp.dnslog.IDnslog;
+import burp.backend.IBackend;
+import burp.poc.IPOC;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static burp.utils.HttpUtils.GetDefaultRequest;
 
-public class DnslogCN implements IDnslog {
+public class DnslogCN implements IBackend {
     OkHttpClient client = new OkHttpClient().newBuilder().cookieJar(new CookieJar() {
                 private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
 
@@ -67,7 +64,7 @@ public class DnslogCN implements IDnslog {
     }
 
     @Override
-    public String getNewDomain() {
+    public String getNewPayload() {
         return Utils.getCurrentTimeMillis() + Utils.GetRandomString(5) + "." + rootDomain;
     }
 
@@ -84,6 +81,11 @@ public class DnslogCN implements IDnslog {
     }
 
     @Override
+    public boolean flushCache(int count) {
+        return flushCache();
+    }
+
+    @Override
     public boolean CheckResult(String domain) {
         return dnsLogResultCache.contains(domain.toLowerCase());
     }
@@ -91,5 +93,10 @@ public class DnslogCN implements IDnslog {
     @Override
     public boolean getState() {
         return rootDomain != "";
+    }
+
+    @Override
+    public int[] getSupportedPOCTypes() {
+        return new int[]{IPOC.POC_TYPE_LDAP, IPOC.POC_TYPE_RMI};
     }
 }

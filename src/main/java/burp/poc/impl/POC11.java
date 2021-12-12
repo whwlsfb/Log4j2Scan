@@ -5,12 +5,12 @@ import burp.utils.Utils;
 
 import static burp.utils.Utils.confusionChars;
 
-public class POC2 implements IPOC {
+public class POC11 implements IPOC {
     private String confusion() {
         StringBuilder result = new StringBuilder();
         result.append(confusionChars(new String[]{"j", "n", "d", "i"}));
         result.append(":");
-        result.append(confusionChars(new String[]{"l", "d", "a", "p"}));
+        result.append(confusionChars(new String[]{"r", "m", "i"}));
         return result.toString();
     }
 
@@ -21,6 +21,6 @@ public class POC2 implements IPOC {
 
     @Override
     public int getType() {
-        return POC_TYPE_LDAP;
+        return POC_TYPE_RMI;
     }
 }

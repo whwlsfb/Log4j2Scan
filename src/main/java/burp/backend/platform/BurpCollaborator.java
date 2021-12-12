@@ -1,10 +1,11 @@
-package burp.dnslog.platform;
+package burp.backend.platform;
 
 import burp.IBurpCollaboratorClientContext;
-import burp.dnslog.IDnslog;
+import burp.backend.IBackend;
+import burp.poc.IPOC;
 import burp.utils.Utils;
 
-public class BurpCollaborator implements IDnslog {
+public class BurpCollaborator implements IBackend {
     IBurpCollaboratorClientContext bcContext;
 
     public BurpCollaborator() {
@@ -17,7 +18,7 @@ public class BurpCollaborator implements IDnslog {
     }
 
     @Override
-    public String getNewDomain() {
+    public String getNewPayload() {
         return bcContext.generatePayload(true);
     }
 
@@ -32,7 +33,17 @@ public class BurpCollaborator implements IDnslog {
     }
 
     @Override
+    public boolean flushCache(int count) {
+        return flushCache();
+    }
+
+    @Override
     public boolean getState() {
         return true;
+    }
+
+    @Override
+    public int[] getSupportedPOCTypes() {
+        return new int[]{IPOC.POC_TYPE_LDAP, IPOC.POC_TYPE_RMI};
     }
 }
