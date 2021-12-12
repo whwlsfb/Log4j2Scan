@@ -9,7 +9,7 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 暂只支持Url、Cookie、POST(x-www-form-urlencoded)、Header类型的参数fuzz。
 
 # ChangeLog
-### 2021/12/11
+### 2021/12/12
 ##### v0.6
 1. 加入静态文件过滤。
 2. 加入多POC支持，共十种poc变种，默认启用POC1~4。
