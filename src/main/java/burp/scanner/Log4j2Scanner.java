@@ -126,6 +126,10 @@ public class Log4j2Scanner implements IScannerCheck {
         return Arrays.stream(STATIC_FILE_EXT).anyMatch(s -> s.equalsIgnoreCase(HttpUtils.getUrlFileExt(url)));
     }
 
+    private Collection<IPOC> getSupportedPOCs() {
+        return Arrays.stream(pocs).filter(p -> Arrays.stream(backend.getSupportedPOCTypes()).anyMatch(c -> c == p.getType())).collect(Collectors.toList());
+    }
+
     private Map<String, ScanItem> headerFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
         List<String> headers = req.getHeaders();
         Map<String, ScanItem> domainMap = new HashMap<>();
@@ -142,7 +146,6 @@ public class Log4j2Scanner implements IScannerCheck {
                         String tmpDomain = backend.getNewPayload();
                         header.Value = poc.generate(tmpDomain);
                         tmpHeaders.set(i, header.toString());
-                        Utils.Callback.printOutput(header + "\r\n");
                         byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
                         IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
                         domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq));
@@ -163,10 +166,6 @@ public class Log4j2Scanner implements IScannerCheck {
             parent.stdout.println(ex);
         }
         return domainMap;
-    }
-
-    private Collection<IPOC> getSupportedPOCs() {
-        return Arrays.stream(pocs).filter(p -> Arrays.stream(backend.getSupportedPOCTypes()).anyMatch(c -> c == p.getType())).collect(Collectors.toList());
     }
 
     private Map<String, ScanItem> paramsFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
