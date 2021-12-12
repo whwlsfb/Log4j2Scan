@@ -9,6 +9,7 @@ import okhttp3.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +37,6 @@ public class RevSuitRMI implements IBackend {
     String rootRMIUrl;
     String token;
     String rmiFlag = "";
-    String rmiResultCache;
 
     public RevSuitRMI(String rsServerAddr, String vpsRMIAddr, String token) {
         this.token = token;
@@ -88,7 +88,14 @@ public class RevSuitRMI implements IBackend {
 
     @Override
     public boolean CheckResult(String payload) {
-        return rmiResultCache.contains(payload.substring(payload.indexOf(rmiFlag)));
+        try {
+            String purePayload = payload.substring(payload.indexOf(rmiFlag));
+            String resp = request(String.format("revsuit/api/record/rmi?page=1&pageSize=5&order=desc&path=%s", URLEncoder.encode(purePayload, "utf-8")));
+            return resp.contains(purePayload);
+        } catch (Exception ex) {
+            Utils.Callback.printOutput(ex.toString());
+            return false;
+        }
     }
 
     @Override
@@ -98,13 +105,7 @@ public class RevSuitRMI implements IBackend {
 
     @Override
     public boolean flushCache(int count) {
-        try {
-            rmiResultCache = request(String.format("revsuit/api/record/rmi?page=1&pageSize=%d&order=desc", count));
-            return true;
-        } catch (Exception ex) {
-            Utils.Callback.printOutput(ex.toString());
-            return false;
-        }
+        return true;
     }
 
     @Override

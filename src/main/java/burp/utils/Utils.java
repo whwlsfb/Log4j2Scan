@@ -35,6 +35,7 @@ public class Utils {
     }
 
     public static int[] getRandomIndex(int size, int max) {
+        if (size > max) size = max;
         return ThreadLocalRandom.current().ints(0, max).distinct().limit(size).toArray();
     }
 
