@@ -42,9 +42,8 @@ Vulnerability detection only supports the following types for now
 Because there is not much time to develop the UI, you can use the following method to switch the Dnslog platform to `ceye.io` manually if you have the need to modify the dnslog platform temporarily first
 
 1. Download the source code and open it with any IDE.
-2. Ceye.java needs to modify the values of "rootDomain" and "token", which correspond to the Identifier and API Token in ceye's profile page.
-3. Log4j2Scanner.java needs to be modified from `this.backend = new DnslogCN();` to `this.backend = new Ceye();`.
-4. Repackage the project using `mvn package`.
+2. Log4j2Scanner.java needs to be modified from `this.backend = new DnslogCN();` to `this.backend = new Ceye("<Identifier>","<api token>");`, which correspond to the Identifier and API Token in ceye's profile page..
+3. Repackage the project using `mvn package`.
 
 # Acknowledgements
 Some of the code in the plugin is borrowed from the following projects
