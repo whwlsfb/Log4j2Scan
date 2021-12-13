@@ -15,6 +15,10 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 - Body(x-www-form-urlencoded)
 
 # ChangeLog
+### 2021/12/13
+##### v0.7
+1. 加入[RevSuit](https://github.com/Li4n0/revsuit/)-RMI的后端支持。
+2. 修复由于域名查询被服务器小写化导致的漏报问题。
 ### 2021/12/12
 ##### v0.6
 1. 加入静态文件过滤。
