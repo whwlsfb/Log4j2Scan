@@ -43,7 +43,7 @@ Because there is not much time to develop the UI, you can use the following meth
 
 1. Download the source code and open it with any IDE.
 2. Ceye.java needs to modify the values of "rootDomain" and "token", which correspond to the Identifier and API Token in ceye's profile page.
-3. Log4j2Scanner.java needs to be modified from `this.dnslog = new DnslogCN();` to `this.dnslog = new Ceye();`.
+3. Log4j2Scanner.java needs to be modified from `this.backend = new DnslogCN();` to `this.backend = new Ceye();`.
 4. Repackage the project using `mvn package`.
 
 # Acknowledgements
