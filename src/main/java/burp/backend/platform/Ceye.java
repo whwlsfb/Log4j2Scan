@@ -32,7 +32,7 @@ public class Ceye implements IBackend {
 
     @Override
     public String getNewPayload() {
-        return Utils.getCurrentTimeMillis() + Utils.GetRandomString(5) + "." + rootDomain;
+        return Utils.getCurrentTimeMillis() + Utils.GetRandomString(5).toLowerCase() + "." + rootDomain;
     }
 
     @Override
