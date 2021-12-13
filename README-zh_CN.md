@@ -43,7 +43,7 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 
 1. 下载源码使用任意IDE打开。
 2. Ceye.java 里需要修改"rootDomain"、"token"的值，对应ceye的profile页面中的Identifier、API Token。
-3. Log4j2Scanner.java里需要将`this.dnslog = new DnslogCN();`修改为`this.dnslog = new Ceye();`
+3. Log4j2Scanner.java里需要将`this.backend = new DnslogCN();`修改为`this.backend = new Ceye();`
 4. 使用`mvn package`重新打包项目。
 
 # 鸣谢
