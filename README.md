@@ -1,46 +1,52 @@
 # Log4j2Scan
 
-> 本工具仅供学习研究自查使用，切勿用于非法用途，由使用该工具产生的一切风险均与本人无关！
+> This tool is only for learning, research and self-examination. It should not be used for illegal purposes. All risks arising from the use of this tool have nothing to do with me!
 
-> dnslog.cn由于请求人数过多，时有无法访问接口的问题，若出现无法扫描的情况时，请确认插件日志中是否提示Dnslog加载成功，或者根据下方的方法设置dnslog为ceye.io
+> dnslog.cn is unable to access the interface from time to time due to the number of requests. If you are unable to scan, please check whether the plug-in log indicates that the Dnslog is loaded successfully, or set the dnslog to ceye.io according to the method below
 
-Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
+English | [简体中文](./README-zh_CN.md)
 
-支持精确提示漏洞参数、漏洞位置，支持多dnslog平台扩展、自动忽略静态文件。
+Log4j2 Remote Code Execution Vulnerability, Passive Scan Plugin for BurpSuite.
 
-漏洞检测暂只支持以下类型
+Support accurate hint vulnerability parameters, vulnerability location, support multi-dnslog platform extension, automatic ignore static files.
+
+Vulnerability detection only supports the following types for now
 - Url
 - Cookie
 - Header
 - Body(x-www-form-urlencoded)
 
 # ChangeLog
+### 2021/12/13
+##### v0.7
+1. add [RevSuit](https://github.com/Li4n0/revsuit/)-RMI backend。
+2. fix domain toLowerCase by server can't match issue。
 ### 2021/12/12
 ##### v0.6
-1. 加入静态文件过滤。
-2. 加入多POC支持，共十种poc变种，默认启用POC1~4。
-3. 加入burpcollaborator的dnslog支持，默认使用dnslog.cn。
+1. add static-file ignore.
+2. add mulit poc support.
+3. add burpcollaborator dnslog backend,default use dnslog.cn。
 ### 2021/12/11
 ##### v0.5
-1. 加入Header的fuzz功能。
+1. add header fuzz。
 ##### v0.4
-1. 加入RC1补丁的绕过poc。
+1. add rc1 patch bypass。
 
-# 效果截图
+# Screenshot
 
 ![](screenshots/detected.png)
 
 
-# 修改Dnslog平台
+# Modify Dnslog platform
 
-因为没有太多的时间去开发界面，有修改dnslog平台需求的可以先临时使用以下方法手动切换Dnslog平台为`ceye.io`
+Because there is not much time to develop the UI, you can use the following method to switch the Dnslog platform to `ceye.io` manually if you have the need to modify the dnslog platform temporarily first
 
-1. 下载源码使用任意IDE打开。
-2. Ceye.java 里需要修改"rootDomain"、"token"的值，对应ceye的profile页面中的Identifier、API Token。
-3. Log4j2Scanner.java里需要将`this.dnslog = new DnslogCN();`修改为`this.dnslog = new Ceye();`
-4. 使用`mvn package`重新打包项目。
+1. Download the source code and open it with any IDE.
+2. Ceye.java needs to modify the values of "rootDomain" and "token", which correspond to the Identifier and API Token in ceye's profile page.
+3. Log4j2Scanner.java needs to be modified from `this.backend = new DnslogCN();` to `this.backend = new Ceye();`.
+4. Repackage the project using `mvn package`.
 
-# 鸣谢
-插件中部分代码借鉴于以下项目
+# Acknowledgements
+Some of the code in the plugin is borrowed from the following projects
 
 https://github.com/pmiaowu/BurpShiroPassiveScan/
