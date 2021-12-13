@@ -6,7 +6,7 @@
 
 English | [简体中文](./README-zh_CN.md)
 
-Log4j2 Remote Code Execution Vulnerability, BurpSuite Passive Scan Plugin.
+Log4j2 Remote Code Execution Vulnerability, Passive Scan Plugin for BurpSuite.
 
 Support accurate hint vulnerability parameters, vulnerability location, support multi-dnslog platform extension, automatic ignore static files.
 
