@@ -42,9 +42,8 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 因为没有太多的时间去开发界面，有修改dnslog平台需求的可以先临时使用以下方法手动切换Dnslog平台为`ceye.io`
 
 1. 下载源码使用任意IDE打开。
-2. Ceye.java 里需要修改"rootDomain"、"token"的值，对应ceye的profile页面中的Identifier、API Token。
-3. Log4j2Scanner.java里需要将`this.backend = new DnslogCN();`修改为`this.backend = new Ceye();`
-4. 使用`mvn package`重新打包项目。
+2. Log4j2Scanner.java里需要将`this.backend = new DnslogCN();`修改为`this.backend = new Ceye("<identifier>", "api token");`，对应ceye的profile页面中的Identifier、API Token。
+3. 使用`mvn package`重新打包项目。
 
 # 鸣谢
 插件中部分代码借鉴于以下项目
