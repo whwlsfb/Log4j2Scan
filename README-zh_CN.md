@@ -4,7 +4,7 @@
 
 > dnslog.cn由于请求人数过多，时有无法访问接口的问题，若出现无法扫描的情况时，请确认插件日志中是否提示Dnslog加载成功，或者根据下方的方法设置dnslog为ceye.io
 
-[English](./README-zh_CN.md) | 简体中文
+[English](./README.md) | 简体中文
 
 Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 
