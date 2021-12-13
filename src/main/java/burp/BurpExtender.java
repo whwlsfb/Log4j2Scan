@@ -12,7 +12,7 @@ public class BurpExtender implements IBurpExtender, ITab {
     public IBurpExtenderCallbacks callbacks;
     public PrintWriter stdout;
     public PrintWriter stderr;
-    public String version = "0.6";
+    public String version = "0.7";
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
@@ -22,7 +22,6 @@ public class BurpExtender implements IBurpExtender, ITab {
         this.stderr = new PrintWriter(callbacks.getStderr(), true);
         callbacks.registerScannerCheck(new Log4j2Scanner(this));
         callbacks.setExtensionName("Log4j2Scan v" + version);
-
     }
 
     @Override
