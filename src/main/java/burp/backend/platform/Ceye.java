@@ -20,6 +20,11 @@ public class Ceye implements IBackend {
     String rootDomain = "<rootDomain>";
     String token = "<token>";
 
+    public Ceye(String rootDomain, String token) {
+        this.rootDomain = rootDomain;
+        this.token = token;
+    }
+
     @Override
     public String getName() {
         return "Ceye.io";
