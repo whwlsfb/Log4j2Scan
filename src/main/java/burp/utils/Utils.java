@@ -16,6 +16,10 @@ public class Utils {
     private static MessageDigest md;
     private static Random rand = new Random();
 
+    public static long getRandomLong() {
+        return rand.nextLong();
+    }
+
     public static int GetRandomNumber(int min, int max) {
         return rand.nextInt(max - min + 1) + min;
     }

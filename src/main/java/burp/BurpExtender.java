@@ -13,7 +13,7 @@ public class BurpExtender implements IBurpExtender, ITab {
     public IBurpExtenderCallbacks callbacks;
     public PrintWriter stdout;
     public PrintWriter stderr;
-    public String version = "0.8";
+    public String version = "0.8.1";
     public Log4j2ScanUIHandler uiHandler;
     public Log4j2Scanner scanner;
 
