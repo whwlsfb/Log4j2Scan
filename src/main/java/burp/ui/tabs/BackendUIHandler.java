@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class BackendUIHandler {
     public enum Backends {
-        BurpCollaborator, DnslogCN, Ceye, RevSuitDNS, RevSuitRMI
+        BurpCollaborator, DnslogCN, Ceye, RevSuitDNS, RevSuitRMI, GoDnslog
     }
 
     private BurpExtender parent;
@@ -29,6 +29,9 @@ public class BackendUIHandler {
     private JTextField revSuitDNSAdminURL;
     private JTextField revSuitDNSDomain;
     private JTextField revSuitDNSToken;
+
+    private JTextField GoDnslogIdentifierInput;
+    private JTextField GoDnslogTokenInput;
 
     public BackendUIHandler(BurpExtender parent) {
         this.parent = parent;
@@ -59,6 +62,7 @@ public class BackendUIHandler {
         backendsPanel.addTab("Ceye", getCeyePanel());
         backendsPanel.addTab("RevSuitRMI", getRevSuitRMIPanel());
         backendsPanel.addTab("RevSuitDNS", getRevSuitDNSPanel());
+        backendsPanel.addTab("GoDnslog", getGodnslogPanel());
         panel2.add(backendsPanel);
 
         mainPanel.add(panel1);
@@ -223,6 +227,50 @@ public class BackendUIHandler {
         return panel1;
     }
 
+    private JPanel getGodnslogPanel() {
+        JPanel panel1 = new JPanel();
+        panel1.setAlignmentX(0.0f);
+        panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
+        panel1.setLayout(new BoxLayout(panel1, 1));
+
+        JPanel subPanel1 = UIUtil.GetXJPanel();
+        GoDnslogIdentifierInput = new JTextField(200);
+        GoDnslogIdentifierInput.setMaximumSize(GoDnslogIdentifierInput.getPreferredSize());
+        subPanel1.add(new JLabel("Identifier: "));
+        subPanel1.add(GoDnslogIdentifierInput);
+
+
+        JPanel subPanel2 = UIUtil.GetXJPanel();
+        GoDnslogTokenInput = new JTextField(200);
+        GoDnslogTokenInput.setMaximumSize(GoDnslogTokenInput.getPreferredSize());
+        subPanel2.add(new JLabel("API Token: "));
+        subPanel2.add(GoDnslogTokenInput);
+
+        JPanel subPanel3 = UIUtil.GetXJPanel();
+        JButton saveBtn = new JButton("Save");
+        saveBtn.setMaximumSize(saveBtn.getPreferredSize());
+        saveBtn.addActionListener(e -> {
+            Config.set(Config.GoDnslog_IDENTIFIER, GoDnslogIdentifierInput.getText());
+            Config.set(Config.GoDnslog_TOKEN, GoDnslogTokenInput.getText());
+            JOptionPane.showMessageDialog(mainPanel, "Save success!");
+        });
+        JButton applyBtn = new JButton("Save&Apply");
+        applyBtn.setMaximumSize(applyBtn.getPreferredSize());
+        applyBtn.addActionListener(e -> {
+            saveBtn.doClick();
+            Config.set(Config.CURRENT_BACKEND, Backends.GoDnslog.name());
+            this.loadConfig();
+            this.apply();
+        });
+        subPanel3.add(saveBtn);
+        subPanel3.add(applyBtn);
+
+        panel1.add(subPanel1);
+        panel1.add(subPanel2);
+        panel1.add(subPanel3);
+        return panel1;
+    }
+
     private void loadConfig() {
         backendSelector.setSelectedItem(Config.get(Config.CURRENT_BACKEND, Backends.BurpCollaborator.name()));
 
@@ -236,6 +284,9 @@ public class BackendUIHandler {
         revSuitDNSAdminURL.setText(Config.get(Config.REVSUIT_DNS_ADMIN_URL));
         revSuitDNSDomain.setText(Config.get(Config.REVSUIT_DNS_DOMAIN));
         revSuitDNSToken.setText(Config.get(Config.REVSUIT_DNS_TOKEN));
+
+        GoDnslogIdentifierInput.setText(Config.get(Config.GoDnslog_IDENTIFIER));
+        GoDnslogTokenInput.setText(Config.get(Config.GoDnslog_TOKEN));
     }
 
     private String[] GetBackends() {
