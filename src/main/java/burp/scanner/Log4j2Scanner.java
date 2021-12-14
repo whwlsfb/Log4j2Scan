@@ -199,18 +199,20 @@ public class Log4j2Scanner implements IScannerCheck {
                     }
                 }
             }
-                for (IPOC poc : getSupportedPOCs()) {
-                    List<String> tmpHeaders = new ArrayList<>(headers);
+            for (IPOC poc : getSupportedPOCs()) {
+                List<String> tmpHeaders = new ArrayList<>(headers);
+                Map<String, String> domainHeaderMap = new HashMap<>();
+                for (String headerName : guessHeaders) {
                     String tmpDomain = backend.getNewPayload();
-                    for (String headerName : guessHeaders) {
-                        tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
-                    }
-                    byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
-                    IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                    for (String headerName : guessHeaders) {
-                        domainMap.put(tmpDomain, new ScanItem(headerName, tmpReq));
-                    }
+                    tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
+                    domainHeaderMap.put(headerName, tmpDomain);
                 }
+                byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
+                IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                for (Map.Entry<String, String> domainHeader : domainHeaderMap.entrySet()) {
+                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq));
+                }
+            }
 
         } catch (Exception ex) {
             parent.stdout.println(ex);
