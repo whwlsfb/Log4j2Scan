@@ -24,8 +24,8 @@ public class GoDnslog implements IBackend {
     String token;
 
     public GoDnslog() {
-        this.rootDomain = Config.get(Config.GoDnslog_IDENTIFIER);
-        this.token = Config.get(Config.GoDnslog_TOKEN);
+        this.rootDomain = Config.get(Config.GODNSLOG_IDENTIFIER);
+        this.token = Config.get(Config.GODNSLOG_TOKEN);
     }
 
     public String getSign(String urlParam) {

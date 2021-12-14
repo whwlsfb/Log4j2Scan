@@ -250,8 +250,8 @@ public class BackendUIHandler {
         JButton saveBtn = new JButton("Save");
         saveBtn.setMaximumSize(saveBtn.getPreferredSize());
         saveBtn.addActionListener(e -> {
-            Config.set(Config.GoDnslog_IDENTIFIER, GoDnslogIdentifierInput.getText());
-            Config.set(Config.GoDnslog_TOKEN, GoDnslogTokenInput.getText());
+            Config.set(Config.GODNSLOG_IDENTIFIER, GoDnslogIdentifierInput.getText());
+            Config.set(Config.GODNSLOG_TOKEN, GoDnslogTokenInput.getText());
             JOptionPane.showMessageDialog(mainPanel, "Save success!");
         });
         JButton applyBtn = new JButton("Save&Apply");
@@ -285,8 +285,8 @@ public class BackendUIHandler {
         revSuitDNSDomain.setText(Config.get(Config.REVSUIT_DNS_DOMAIN));
         revSuitDNSToken.setText(Config.get(Config.REVSUIT_DNS_TOKEN));
 
-        GoDnslogIdentifierInput.setText(Config.get(Config.GoDnslog_IDENTIFIER));
-        GoDnslogTokenInput.setText(Config.get(Config.GoDnslog_TOKEN));
+        GoDnslogIdentifierInput.setText(Config.get(Config.GODNSLOG_IDENTIFIER));
+        GoDnslogTokenInput.setText(Config.get(Config.GODNSLOG_TOKEN));
     }
 
     private String[] GetBackends() {

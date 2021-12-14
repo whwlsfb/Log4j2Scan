@@ -11,8 +11,8 @@ public class Config {
     public static final String REVSUIT_DNS_DOMAIN = "revsuit_dns_domain";
     public static final String REVSUIT_DNS_TOKEN = "revsuit_dns_token";
     public static final String ENABLED_POC_IDS = "enabled_poc_ids";
-    public static final String GoDnslog_IDENTIFIER = "godnslog_identifier";
-    public static final String GoDnslog_TOKEN = "godnslog_token";
+    public static final String GODNSLOG_IDENTIFIER = "godnslog_identifier";
+    public static final String GODNSLOG_TOKEN = "godnslog_token";
 
     public static String get(String name) {
         return Utils.Callback.loadExtensionSetting(name);
