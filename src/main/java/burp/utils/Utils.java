@@ -7,13 +7,14 @@ import burp.poc.IPOC;
 import java.lang.reflect.Field;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
     public static IBurpExtenderCallbacks Callback;
     private static MessageDigest md;
-    private static Random rand = new Random();
+    private static SecureRandom rand = new SecureRandom();
 
     public static long getRandomLong() {
         return rand.nextLong();
