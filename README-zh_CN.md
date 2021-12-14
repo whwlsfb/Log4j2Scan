@@ -45,6 +45,10 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 2. Log4j2Scanner.java里需要将`this.backend = new DnslogCN();`修改为`this.backend = new Ceye("<identifier>", "<api token>");`，对应ceye的profile页面中的Identifier、API Token。
 3. 使用`mvn package`重新打包项目。
 
+# 微信交流群
+
+![](wx_group_qrcode.png)
+
 # 鸣谢
 插件中部分代码借鉴于以下项目
 
