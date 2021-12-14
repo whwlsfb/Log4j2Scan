@@ -53,6 +53,13 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 2. Log4j2Scanner.java里需要将`this.backend = new DnslogCN();`修改为`this.backend = new RevSuitRMI("http://192.168.xx.xx:10000", "192.168.xx.xx:1099", "<token>");`，对应RevSuit配置中的管理页面地址、RMI反连地址、管理用TOKEN。
 3. 使用`mvn package`重新打包项目。
 
+
+## 切换为`RevSuitDNS`
+
+1. 下载源码使用任意IDE打开。
+2. Log4j2Scanner.java里需要将`this.backend = new DnslogCN();`修改为`this.backend = new RevSuitDNS("http://192.168.xx.xx:10000", "xx.xx.com", "<token>");`，对应RevSuit配置中的管理页面地址、配置文件中的dnslog域名(不包含rule flag)、管理用TOKEN。
+3. 使用`mvn package`重新打包项目。
+
 # 微信交流群
 
 ![](wx_group_qrcode.png)
