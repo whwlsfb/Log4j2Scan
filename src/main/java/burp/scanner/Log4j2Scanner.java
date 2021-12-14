@@ -199,16 +199,19 @@ public class Log4j2Scanner implements IScannerCheck {
                     }
                 }
             }
-            for (String headerName : guessHeaders) {
                 for (IPOC poc : getSupportedPOCs()) {
                     List<String> tmpHeaders = new ArrayList<>(headers);
                     String tmpDomain = backend.getNewPayload();
-                    tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
+                    for (String headerName : guessHeaders) {
+                        tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
+                    }
                     byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
                     IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                    domainMap.put(tmpDomain, new ScanItem(headerName, tmpReq));
+                    for (String headerName : guessHeaders) {
+                        domainMap.put(tmpDomain, new ScanItem(headerName, tmpReq));
+                    }
                 }
-            }
+
         } catch (Exception ex) {
             parent.stdout.println(ex);
         }
