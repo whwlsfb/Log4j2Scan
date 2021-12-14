@@ -18,12 +18,14 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 
 # ChangeLog
 ### 2021/12/13
+##### v0.8.1
+1. 绕过dnslog.cn的异常访问过滤。
 ##### v0.8
 1. 添加dnslog设置界面，支持多dnslog平台实时切换。
 2. 添加 [RevSuit](https://github.com/Li4n0/revsuit/)-DNS 的后端支持。
 ### 2021/12/13
 ##### v0.7
-1. 加入[RevSuit](https://github.com/Li4n0/revsuit/)-RMI的后端支持。
+1. 加入 [RevSuit](https://github.com/Li4n0/revsuit/)-RMI 的后端支持。
 2. 修复由于域名查询被服务器小写化导致的漏报问题。
 ### 2021/12/12
 ##### v0.6

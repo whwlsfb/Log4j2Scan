@@ -18,23 +18,25 @@ Vulnerability detection only supports the following types for now
 
 # ChangeLog
 ### 2021/12/13
+##### v0.8.1
+1. bypass dnslog.cn filter.
 ##### v0.8
-1. add backend setting panel。
-2. add revsuit-dns backend.
+1. add backend setting panel.
+2. add [RevSuit](https://github.com/Li4n0/revsuit/)-DNS backend.
 ### 2021/12/13
 ##### v0.7
-1. add [RevSuit](https://github.com/Li4n0/revsuit/)-RMI backend。
-2. fix domain toLowerCase by server can't match issue。
+1. add [RevSuit](https://github.com/Li4n0/revsuit/)-RMI backend.
+2. fix domain toLowerCase by server can't match issue.
 ### 2021/12/12
 ##### v0.6
 1. add static-file ignore.
 2. add mulit poc support.
-3. add burpcollaborator dnslog backend,default use dnslog.cn。
+3. add burpcollaborator dnslog backend,default use dnslog.cn.
 ### 2021/12/11
 ##### v0.5
-1. add header fuzz。
+1. add header fuzz.
 ##### v0.4
-1. add rc1 patch bypass。
+1. add rc1 patch bypass.
 
 # Screenshot
 
