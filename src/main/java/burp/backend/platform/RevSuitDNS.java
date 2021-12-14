@@ -2,6 +2,7 @@ package burp.backend.platform;
 
 import burp.backend.IBackend;
 import burp.poc.IPOC;
+import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
 import com.alibaba.fastjson.JSONObject;
@@ -35,14 +36,15 @@ public class RevSuitDNS implements IBackend {
     String token;
     String dnsFlag = "";
 
-    public RevSuitDNS(String rsServerAddr, String rootDomain, String token) {
-        this.token = token;
-        this.serverAddr = rsServerAddr.endsWith("/") ? rsServerAddr : rsServerAddr + "/";
-        this.rootDomain = rootDomain;
-        initRMIEnv();
+    public RevSuitDNS() {
+        this.token = Config.get(Config.REVSUIT_DNS_TOKEN);
+        String serverAddr = Config.get(Config.REVSUIT_DNS_ADMIN_URL);
+        this.serverAddr = serverAddr.endsWith("/") ? serverAddr : serverAddr + "/";
+        this.rootDomain = Config.get(Config.REVSUIT_DNS_DOMAIN);
+        initDNSEnv();
     }
 
-    private void initRMIEnv() {
+    private void initDNSEnv() {
         try {
             JSONObject createDNSRuleReq = new JSONObject();
             String flag = Utils.GetRandomString(Utils.GetRandomNumber(5, 10)).toLowerCase();
@@ -108,6 +110,10 @@ public class RevSuitDNS implements IBackend {
     @Override
     public boolean getState() {
         return !dnsFlag.equals("");
+    }
+
+    @Override
+    public void close() {
     }
 
     @Override

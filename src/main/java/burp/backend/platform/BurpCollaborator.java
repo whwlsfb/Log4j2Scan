@@ -46,4 +46,8 @@ public class BurpCollaborator implements IBackend {
     public int[] getSupportedPOCTypes() {
         return new int[]{IPOC.POC_TYPE_LDAP, IPOC.POC_TYPE_RMI};
     }
+
+    @Override
+    public void close() {
+    }
 }

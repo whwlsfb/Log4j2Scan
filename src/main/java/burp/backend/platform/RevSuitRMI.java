@@ -2,6 +2,7 @@ package burp.backend.platform;
 
 import burp.backend.IBackend;
 import burp.poc.IPOC;
+import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
 import com.alibaba.fastjson.JSONObject;
@@ -19,18 +20,18 @@ import java.util.concurrent.TimeUnit;
 
 public class RevSuitRMI implements IBackend {
     OkHttpClient client = new OkHttpClient().newBuilder().cookieJar(new CookieJar() {
-                @Override
-                public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                    return;
-                }
+        @Override
+        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+            return;
+        }
 
-                @Override
-                public List<Cookie> loadForRequest(HttpUrl url) {
-                    List<Cookie> cookies = new ArrayList<>();
-                    cookies.add(new Cookie.Builder().domain(url.host()).name("token").value(token).build());
-                    return cookies;
-                }
-            }).connectTimeout(50, TimeUnit.SECONDS).
+        @Override
+        public List<Cookie> loadForRequest(HttpUrl url) {
+            List<Cookie> cookies = new ArrayList<>();
+            cookies.add(new Cookie.Builder().domain(url.host()).name("token").value(token).build());
+            return cookies;
+        }
+    }).connectTimeout(50, TimeUnit.SECONDS).
             callTimeout(50, TimeUnit.SECONDS).
             readTimeout(3, TimeUnit.MINUTES).build();
     String serverAddr;
@@ -38,10 +39,12 @@ public class RevSuitRMI implements IBackend {
     String token;
     String rmiFlag = "";
 
-    public RevSuitRMI(String rsServerAddr, String vpsRMIAddr, String token) {
-        this.token = token;
-        this.serverAddr = rsServerAddr.endsWith("/") ? rsServerAddr : rsServerAddr + "/";
-        this.rootRMIUrl = vpsRMIAddr.endsWith("/") ? vpsRMIAddr : vpsRMIAddr + "/";
+    public RevSuitRMI() {
+        this.token = Config.get(Config.REVSUIT_RMI_TOKEN);
+        String serverAddr = Config.get(Config.REVSUIT_RMI_ADMIN_URL);
+        this.serverAddr = serverAddr.endsWith("/") ? serverAddr : serverAddr + "/";
+        String rootRMIUrl = Config.get(Config.REVSUIT_RMI_ADDR);
+        this.rootRMIUrl = rootRMIUrl.endsWith("/") ? rootRMIUrl : rootRMIUrl + "/";
         initRMIEnv();
     }
 
@@ -111,6 +114,10 @@ public class RevSuitRMI implements IBackend {
     @Override
     public boolean getState() {
         return !rmiFlag.equals("");
+    }
+
+    @Override
+    public void close() {
     }
 
     @Override

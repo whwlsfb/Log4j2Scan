@@ -2,6 +2,7 @@ package burp.backend.platform;
 
 import burp.backend.IBackend;
 import burp.poc.IPOC;
+import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
 import com.alibaba.fastjson.JSONArray;
@@ -17,12 +18,12 @@ public class Ceye implements IBackend {
             connectTimeout(3000, TimeUnit.SECONDS).
             callTimeout(3000, TimeUnit.SECONDS).build();
     String platformUrl = "http://api.ceye.io/";
-    String rootDomain = "<rootDomain>";
-    String token = "<token>";
+    String rootDomain;
+    String token;
 
-    public Ceye(String rootDomain, String token) {
-        this.rootDomain = rootDomain;
-        this.token = token;
+    public Ceye() {
+        this.rootDomain = Config.get(Config.CEYE_IDENTIFIER);
+        this.token = Config.get(Config.CEYE_TOKEN);
     }
 
     @Override
@@ -63,6 +64,10 @@ public class Ceye implements IBackend {
     @Override
     public boolean getState() {
         return true;
+    }
+
+    @Override
+    public void close() {
     }
 
     @Override

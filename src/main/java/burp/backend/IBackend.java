@@ -14,4 +14,6 @@ public interface IBackend {
     boolean getState();
 
     int[] getSupportedPOCTypes();
+
+    void close();
 }

@@ -2,15 +2,11 @@ package burp.scanner;
 
 import burp.*;
 import burp.backend.IBackend;
-import burp.backend.platform.Ceye;
-import burp.backend.platform.DnslogCN;
-import burp.backend.platform.RevSuitRMI;
+import burp.backend.platform.*;
 import burp.poc.IPOC;
 import burp.poc.impl.*;
-import burp.utils.HttpHeader;
-import burp.utils.HttpUtils;
-import burp.utils.ScanItem;
-import burp.utils.Utils;
+import burp.ui.tabs.BackendUIHandler;
+import burp.utils.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,7 +15,7 @@ import java.util.stream.Stream;
 public class Log4j2Scanner implements IScannerCheck {
     private BurpExtender parent;
     private IExtensionHelpers helper;
-    private IBackend backend;
+    public IBackend backend;
 
     private final String[] HEADER_BLACKLIST = new String[]{
             "content-length",
@@ -88,11 +84,55 @@ public class Log4j2Scanner implements IScannerCheck {
         this.parent = newParent;
         this.helper = newParent.helpers;
         this.pocs = new IPOC[]{new POC1(), new POC2(), new POC3(), new POC4(), new POC11()};
-        this.backend = new DnslogCN();
+        this.loadConfig();
         if (this.backend.getState()) {
             parent.stdout.println("Log4j2Scan loaded successfully!\r\n");
         } else {
             parent.stdout.println("Backend init failed!\r\n");
+        }
+    }
+
+    public void close() {
+        if (this.backend != null) {
+            this.backend.close();
+        }
+    }
+
+    public boolean getState() {
+        try {
+            return this.backend.getState();
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    private void loadConfig() {
+        BackendUIHandler.Backends currentBackend = BackendUIHandler.Backends.valueOf(Config.get(Config.CURRENT_BACKEND, BackendUIHandler.Backends.BurpCollaborator.name()));
+        try {
+            switch (currentBackend) {
+                case Ceye:
+                    this.backend = new Ceye();
+                    break;
+                case DnslogCN:
+                    this.backend = new DnslogCN();
+                    break;
+                case RevSuitDNS:
+                    this.backend = new RevSuitDNS();
+                    break;
+                case RevSuitRMI:
+                    this.backend = new RevSuitRMI();
+                    break;
+                case BurpCollaborator:
+                    this.backend = new BurpCollaborator();
+                    break;
+            }
+        } catch (Exception ex) {
+            parent.stdout.println(ex);
+        } finally {
+            if (this.backend == null || !this.backend.getState()) {
+                parent.stdout.println("Load backend from config failed! fallback to dnslog.cn....");
+                this.backend = new DnslogCN();
+            }
         }
     }
 

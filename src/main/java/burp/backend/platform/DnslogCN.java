@@ -13,24 +13,25 @@ import static burp.utils.HttpUtils.GetDefaultRequest;
 
 public class DnslogCN implements IBackend {
     OkHttpClient client = new OkHttpClient().newBuilder().cookieJar(new CookieJar() {
-                private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
+        private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
 
-                @Override
-                public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                    cookieStore.put(url.host(), cookies);
-                }
+        @Override
+        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+            cookieStore.put(url.host(), cookies);
+        }
 
-                @Override
-                public List<Cookie> loadForRequest(HttpUrl url) {
-                    List<Cookie> cookies = cookieStore.get(url.host());
-                    return cookies != null ? cookies : new ArrayList<Cookie>();
-                }
-            }).connectTimeout(50, TimeUnit.SECONDS).
+        @Override
+        public List<Cookie> loadForRequest(HttpUrl url) {
+            List<Cookie> cookies = cookieStore.get(url.host());
+            return cookies != null ? cookies : new ArrayList<Cookie>();
+        }
+    }).connectTimeout(50, TimeUnit.SECONDS).
             callTimeout(50, TimeUnit.SECONDS).
             readTimeout(3, TimeUnit.MINUTES).build();
     String platformUrl = "http://www.dnslog.cn/";
     String rootDomain = "";
     String dnsLogResultCache = "";
+    Timer timer = new Timer();
 
     public DnslogCN() {
         this.initDomain();
@@ -49,13 +50,17 @@ public class DnslogCN implements IBackend {
     }
 
     private void startSessionHeartbeat() {
-        Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 flushCache();
             }
         }, 0, 2 * 60 * 1000); //2min
+    }
+
+    @Override
+    public void close() {
+        timer.cancel();
     }
 
     @Override
