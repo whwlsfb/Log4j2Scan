@@ -10,6 +10,7 @@ public class Config {
     public static final String REVSUIT_DNS_ADMIN_URL = "revsuit_dns_admin_url";
     public static final String REVSUIT_DNS_DOMAIN = "revsuit_dns_domain";
     public static final String REVSUIT_DNS_TOKEN = "revsuit_dns_token";
+    public static final String ENABLED_POC_IDS = "enabled_poc_ids";
 
 
     public static String get(String name) {

@@ -2,13 +2,12 @@ package burp.utils;
 
 
 import burp.IBurpExtenderCallbacks;
+import burp.poc.IPOC;
 
+import java.lang.reflect.Field;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -67,6 +66,18 @@ public class Utils {
             garbage.append(garbageWord).append(":");
         }
         return String.format("${%s-%s}", garbage, _char);
+    }
+
+    public static Map<Integer, IPOC> getPOCs(Integer[] pocRange) {
+        Map<Integer, IPOC> pocs = new HashMap();
+        for (int pocId : pocRange) {
+            try {
+                pocs.put(pocId, (IPOC) Class.forName("burp.poc.impl.POC" + pocId).getConstructor().newInstance());
+            } catch (Exception ex) {
+                Utils.Callback.printOutput(ex.toString());
+            }
+        }
+        return pocs;
     }
 
     public static byte[] byteMerger(byte[] bt1, byte[] bt2) {

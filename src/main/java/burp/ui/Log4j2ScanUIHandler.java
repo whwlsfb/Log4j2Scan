@@ -4,6 +4,8 @@ import burp.BurpExtender;
 import burp.IBurpExtender;
 import burp.ITab;
 import burp.ui.tabs.BackendUIHandler;
+import burp.ui.tabs.POCUIHandler;
+import burp.utils.Utils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +22,9 @@ public class Log4j2ScanUIHandler implements ITab {
     private void initUI() {
         this.mainPanel = new JTabbedPane();
         BackendUIHandler bui = new BackendUIHandler(parent);
+        POCUIHandler pui = new POCUIHandler(parent);
         this.mainPanel.addTab("Backend", bui.getPanel());
+        this.mainPanel.addTab("POC", pui.getPanel());
     }
 
     @Override

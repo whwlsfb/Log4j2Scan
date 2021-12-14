@@ -7,10 +7,14 @@ import burp.poc.IPOC;
 import burp.poc.impl.*;
 import burp.ui.tabs.BackendUIHandler;
 import burp.utils.*;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static burp.ui.tabs.POCUIHandler.defaultEnabledPocIds;
 
 public class Log4j2Scanner implements IScannerCheck {
     private BurpExtender parent;
@@ -83,7 +87,6 @@ public class Log4j2Scanner implements IScannerCheck {
     public Log4j2Scanner(final BurpExtender newParent) {
         this.parent = newParent;
         this.helper = newParent.helpers;
-        this.pocs = new IPOC[]{new POC1(), new POC2(), new POC3(), new POC4(), new POC11()};
         this.loadConfig();
         if (this.backend.getState()) {
             parent.stdout.println("Log4j2Scan loaded successfully!\r\n");
@@ -100,7 +103,7 @@ public class Log4j2Scanner implements IScannerCheck {
 
     public boolean getState() {
         try {
-            return this.backend.getState();
+            return this.backend.getState() && getSupportedPOCs().size() > 0;
         } catch (Exception ex) {
             return false;
         }
@@ -108,6 +111,7 @@ public class Log4j2Scanner implements IScannerCheck {
 
     private void loadConfig() {
         BackendUIHandler.Backends currentBackend = BackendUIHandler.Backends.valueOf(Config.get(Config.CURRENT_BACKEND, BackendUIHandler.Backends.BurpCollaborator.name()));
+        JSONArray enabled_poc_ids = JSONArray.parseArray(Config.get(Config.ENABLED_POC_IDS, JSONObject.toJSONString(defaultEnabledPocIds)));
         try {
             switch (currentBackend) {
                 case Ceye:
@@ -126,6 +130,9 @@ public class Log4j2Scanner implements IScannerCheck {
                     this.backend = new BurpCollaborator();
                     break;
             }
+            List<Integer> enabled_poc_ids_list = new ArrayList<>();
+            enabled_poc_ids.forEach(e -> enabled_poc_ids_list.add((int) e));
+            this.pocs = Utils.getPOCs(Arrays.asList(enabled_poc_ids.toArray()).toArray(new Integer[0])).values().toArray(new IPOC[0]);
         } catch (Exception ex) {
             parent.stdout.println(ex);
         } finally {
