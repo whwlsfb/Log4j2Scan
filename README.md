@@ -19,7 +19,7 @@ Vulnerability detection only supports the following types for now
 # ChangeLog
 ### 2021/12/14
 ##### v0.9
-1. add GoDnslog backend, thx for @54Pany .
+1. add [GoDnslog](https://github.com/chennqqi/godnslog) backend, thx for [@54Pany](https://github.com/54Pany) .
 2. add fuzz setting ui.
 3. add poc setting ui.
 4. add Body(json, xml, multipart) fuzz.
