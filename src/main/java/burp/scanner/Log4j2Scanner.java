@@ -246,10 +246,17 @@ public class Log4j2Scanner implements IScannerCheck {
                         case IParameter.PARAM_URL:
                             if (!Config.getBoolean(Config.ENABLED_FUZZ_URL, true))
                                 continue;
+                            exp = helper.urlEncode(exp);
+                            exp = urlencodeForTomcat(exp);
+                            inHeader = true;
+                            break;
                         case IParameter.PARAM_COOKIE:
                             if (!Config.getBoolean(Config.ENABLED_FUZZ_COOKIE, true))
                                 continue;
+                            exp = helper.urlEncode(exp);
+                            exp = urlencodeForTomcat(exp);
                             inHeader = true;
+                            break;
                         case IParameter.PARAM_BODY:
                             if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_FORM, true))
                                 continue;
@@ -365,10 +372,17 @@ public class Log4j2Scanner implements IScannerCheck {
                         case IParameter.PARAM_URL:
                             if (!Config.getBoolean(Config.ENABLED_FUZZ_URL, true))
                                 continue;
+                            exp = helper.urlEncode(exp);
+                            exp = urlencodeForTomcat(exp);
+                            inHeader = true;
+                            break;
                         case IParameter.PARAM_COOKIE:
                             if (!Config.getBoolean(Config.ENABLED_FUZZ_COOKIE, true))
                                 continue;
+                            exp = helper.urlEncode(exp);
+                            exp = urlencodeForTomcat(exp);
                             inHeader = true;
+                            break;
                         case IParameter.PARAM_BODY:
                             if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_FORM, true))
                                 continue;
