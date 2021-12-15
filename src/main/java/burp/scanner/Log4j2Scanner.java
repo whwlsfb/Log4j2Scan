@@ -85,6 +85,8 @@ public class Log4j2Scanner implements IScannerCheck {
 
     private IPOC[] pocs;
 
+    private Config.FuzzMode fuzzMode;
+
     public Log4j2Scanner(final BurpExtender newParent) {
         this.parent = newParent;
         this.helper = newParent.helpers;
@@ -155,13 +157,20 @@ public class Log4j2Scanner implements IScannerCheck {
 
     @Override
     public List<IScanIssue> doPassiveScan(IHttpRequestResponse baseRequestResponse) {
+        this.fuzzMode = Config.FuzzMode.valueOf(Config.get(Config.FUZZ_MODE, Config.FuzzMode.EachFuzz.name()));
         IRequestInfo req = this.parent.helpers.analyzeRequest(baseRequestResponse);
         List<IScanIssue> issues = new ArrayList<>();
         if (!isStaticFile(req.getUrl().toString())) {
             parent.stdout.println(String.format("Scanning: %s", req.getUrl()));
             Map<String, ScanItem> domainMap = new HashMap<>();
-            domainMap.putAll(paramsFuzz(baseRequestResponse, req));
-            domainMap.putAll(headerFuzz(baseRequestResponse, req));
+            if (this.fuzzMode == Config.FuzzMode.EachFuzz) {
+                domainMap.putAll(paramsFuzz(baseRequestResponse, req));
+                if (Config.getBoolean(Config.ENABLED_FUZZ_HEADER, true)) {
+                    domainMap.putAll(headerFuzz(baseRequestResponse, req));
+                }
+            } else {
+                domainMap.putAll(crazyFuzz(baseRequestResponse, req));
+            }
             try {
                 Thread.sleep(2000); //sleep 2s, wait for network delay.
             } catch (InterruptedException e) {
@@ -179,6 +188,115 @@ public class Log4j2Scanner implements IScannerCheck {
 
     private Collection<IPOC> getSupportedPOCs() {
         return Arrays.stream(pocs).filter(p -> Arrays.stream(backend.getSupportedPOCTypes()).anyMatch(c -> c == p.getType())).collect(Collectors.toList());
+    }
+
+    private Map<String, ScanItem> crazyFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        List<String> headers = req.getHeaders();
+        Map<String, ScanItem> domainMap = new HashMap<>();
+        for (IPOC poc : getSupportedPOCs()) {
+            try {
+                byte[] rawRequest = baseRequestResponse.getRequest();
+                byte[] tmpRawRequest = rawRequest;
+                byte[] rawBody = Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length);
+                List<String> tmpHeaders = new ArrayList<>(headers);
+                Map<String, String> domainHeaderMap = new HashMap<>();
+                if (Config.getBoolean(Config.ENABLED_FUZZ_HEADER, true)) {
+                    List<String> guessHeaders = new ArrayList(Arrays.asList(HEADER_GUESS));
+                    for (int i = 1; i < headers.size(); i++) {
+                        HttpHeader header = new HttpHeader(headers.get(i));
+                        if (Arrays.stream(HEADER_BLACKLIST).noneMatch(h -> h.equalsIgnoreCase(header.Name))) {
+                            List<String> needSkipheader = guessHeaders.stream().filter(h -> h.equalsIgnoreCase(header.Name)).collect(Collectors.toList());
+                            needSkipheader.forEach(guessHeaders::remove);
+                            String tmpDomain = backend.getNewPayload();
+                            header.Value = poc.generate(tmpDomain);
+                            if (header.Name.equalsIgnoreCase("accept")) {
+                                header.Value = "*/*;" + header.Value;
+                            }
+                            tmpHeaders.set(i, header.toString());
+                            domainHeaderMap.put(header.Name, tmpDomain);
+                        }
+                    }
+                    for (String headerName : guessHeaders) {
+                        String tmpDomain = backend.getNewPayload();
+                        tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
+                        domainHeaderMap.put(headerName, tmpDomain);
+                    }
+                }
+                int skipLength = 0;
+                int paramsIndex = 0;
+                Map<Integer, ParamReplace> paramMap = new HashMap<>();
+                Map<String, IParameter> domainParamMap = new HashMap<>();
+                tmpRawRequest = parent.helpers.buildHttpMessage(tmpHeaders, rawBody);
+                IRequestInfo tmpReqInfo = parent.helpers.analyzeRequest(tmpRawRequest);
+                for (IParameter param : tmpReqInfo.getParameters()) {
+                    String tmpDomain = backend.getNewPayload();
+                    String exp = poc.generate(tmpDomain);
+                    boolean inHeader = false;
+                    switch (param.getType()) {
+                        case IParameter.PARAM_URL:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_URL, true))
+                                continue;
+                        case IParameter.PARAM_COOKIE:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_COOKIE, true))
+                                continue;
+                            inHeader = true;
+                        case IParameter.PARAM_BODY:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_FORM, true))
+                                continue;
+                            exp = helper.urlEncode(exp);
+                            exp = urlencodeForTomcat(exp);
+                            break;
+                        case IParameter.PARAM_JSON:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_JSON, true))
+                                continue;
+                            break;
+                        case IParameter.PARAM_MULTIPART_ATTR:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_MULTIPART, true))
+                                continue;
+                            break;
+                        case IParameter.PARAM_XML:
+                        case IParameter.PARAM_XML_ATTR:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_XML, true))
+                                continue;
+                            break;
+                    }
+                    if (inHeader) {
+                        IParameter newParam = helper.buildParameter(param.getName(), exp, param.getType());
+                        tmpRawRequest = helper.updateParameter(tmpRawRequest, newParam);
+                    } else {
+                        paramMap.put(paramsIndex++, new ParamReplace(
+                                param.getValueStart() - tmpReqInfo.getBodyOffset() + skipLength,
+                                param.getValueEnd() - tmpReqInfo.getBodyOffset() + skipLength,
+                                exp));
+                        skipLength += exp.length() - (param.getValueEnd() - param.getValueStart());
+                    }
+                    domainParamMap.put(tmpDomain, param);
+                }
+                tmpRawRequest = helper.buildHttpMessage(helper.analyzeRequest(tmpRawRequest).getHeaders(), updateParams(rawBody, paramMap));
+                IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                for (Map.Entry<String, String> domainHeader : domainHeaderMap.entrySet()) {
+                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq));
+                }
+                for (Map.Entry<String, IParameter> domainParam : domainParamMap.entrySet()) {
+                    domainMap.put(domainParam.getKey(), new ScanItem(domainParam.getValue(), tmpReq));
+                }
+            } catch (Exception ex) {
+                parent.stdout.println(ex);
+            }
+        }
+
+
+        return domainMap;
+    }
+
+    private byte[] updateParams(byte[] rawBody, Map<Integer, ParamReplace> paramMap) {
+        byte[] body = rawBody;
+        for (int i = 0; i < paramMap.size(); i++) {
+            ParamReplace paramReplace = paramMap.get(i);
+            body = Utils.Replace(body, new int[]{paramReplace.Start, paramReplace.End}, paramReplace.Payload.getBytes(StandardCharsets.UTF_8));
+            parent.stdout.println(paramReplace);
+        }
+        return body;
     }
 
     private Map<String, ScanItem> headerFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
@@ -231,21 +349,36 @@ public class Log4j2Scanner implements IScannerCheck {
             for (IPOC poc : getSupportedPOCs()) {
                 try {
                     String tmpDomain = backend.getNewPayload();
-                    byte[] tmpRawRequest = rawRequest;
+                    byte[] tmpRawRequest;
                     String exp = poc.generate(tmpDomain);
                     boolean inHeader = false;
                     switch (param.getType()) {
                         case IParameter.PARAM_URL:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_URL, true))
+                                continue;
                         case IParameter.PARAM_COOKIE:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_COOKIE, true))
+                                continue;
                             inHeader = true;
                         case IParameter.PARAM_BODY:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_FORM, true))
+                                continue;
                             exp = helper.urlEncode(exp);
                             exp = urlencodeForTomcat(exp);
                             break;
                         case IParameter.PARAM_JSON:
-                        case IParameter.PARAM_XML:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_JSON, true))
+                                continue;
+                            break;
                         case IParameter.PARAM_MULTIPART_ATTR:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_MULTIPART, true))
+                                continue;
+                            break;
+                        case IParameter.PARAM_XML:
                         case IParameter.PARAM_XML_ATTR:
+                            if (!Config.getBoolean(Config.ENABLED_FUZZ_BODY_XML, true))
+                                continue;
+                            break;
                     }
                     if (inHeader) {
                         IParameter newParam = helper.buildParameter(param.getName(), exp, param.getType());
