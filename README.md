@@ -55,6 +55,8 @@ Vulnerability detection only supports the following types for now
 
 ![](screenshots/revsuit_dns_backend.png)
 
+![](screenshots/godnslog_backend.png)
+
 ![](screenshots/poc_setting.png)
 
 ![](screenshots/fuzz_setting.png)
