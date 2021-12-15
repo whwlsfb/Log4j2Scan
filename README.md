@@ -14,9 +14,16 @@ Vulnerability detection only supports the following types for now
 - Url
 - Cookie
 - Header
-- Body(x-www-form-urlencoded)
+- Body(x-www-form-urlencoded, json, xml, multipart)
 
 # ChangeLog
+### 2021/12/14
+##### v0.9
+1. add GoDnslog backend, thx for @54Pany .
+2. add fuzz setting ui.
+3. add poc setting ui.
+4. add Body(json, xml, multipart) fuzz.
+5. opt header guess-fuzz logic.
 ### 2021/12/13
 ##### v0.8.1
 1. bypass dnslog.cn filter.
