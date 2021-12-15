@@ -154,6 +154,7 @@ public class Log4j2Scanner implements IScannerCheck {
             if (this.backend == null || !this.backend.getState()) {
                 parent.stdout.println("Load backend from config failed! fallback to dnslog.cn....");
                 this.backend = new DnslogCN();
+                this.pocs = Utils.getPOCs(new Integer[]{1, 2, 3, 4, 11}).values().toArray(new IPOC[0]);
             }
         }
     }
