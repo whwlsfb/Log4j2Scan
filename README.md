@@ -17,6 +17,12 @@ Vulnerability detection only supports the following types for now
 - Body(x-www-form-urlencoded)
 
 # ChangeLog
+### 2021/12/14
+##### v0.9
+1. add GoDnslog backend, thx for @54Pany .
+2. add fuzz setting ui.
+3. add poc setting ui.
+4. opt header guess-fuzz logic.
 ### 2021/12/13
 ##### v0.8.1
 1. bypass dnslog.cn filter.
