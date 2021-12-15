@@ -294,7 +294,6 @@ public class Log4j2Scanner implements IScannerCheck {
         for (int i = 0; i < paramMap.size(); i++) {
             ParamReplace paramReplace = paramMap.get(i);
             body = Utils.Replace(body, new int[]{paramReplace.Start, paramReplace.End}, paramReplace.Payload.getBytes(StandardCharsets.UTF_8));
-            parent.stdout.println(paramReplace);
         }
         return body;
     }
