@@ -44,7 +44,8 @@ public class Log4j2Scanner implements IScannerCheck {
             "Forwarded",
             "X-Api-Version",
             "X-Wap-Profile",
-            "Contact"
+            "Contact",
+            "If-Mondified-Since"
     };
 
     private final String[] STATIC_FILE_EXT = new String[]{
