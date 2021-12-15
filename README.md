@@ -17,14 +17,14 @@ Vulnerability detection only supports the following types for now
 - Body(x-www-form-urlencoded, json, xml, multipart)
 
 # ChangeLog
-### 2021/12/14
+### 2021/12/15
 ##### v0.9
 1. add [GoDnslog](https://github.com/chennqqi/godnslog) backend, thx for [@54Pany](https://github.com/54Pany) .
 2. add fuzz setting ui.
 3. add poc setting ui.
 4. add Body(json, xml, multipart) fuzz.
 5. opt header guess-fuzz logic.
-### 2021/12/13
+### 2021/12/14
 ##### v0.8.1
 1. bypass dnslog.cn filter.
 ##### v0.8
