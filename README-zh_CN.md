@@ -14,15 +14,16 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 - Url
 - Cookie
 - Header
-- Body(x-www-form-urlencoded)
+- Body(x-www-form-urlencoded、json、xml、multipart)
 
 # ChangeLog
 ### 2021/12/14
 ##### v0.9
-- 加入GoDnslog的后端支持，感谢 @54Pany 。
-- 加入Fuzz设置界面。
-- 加入POC设置界面。
-- 优化header请求逻辑，降低请求数量。
+1. 加入GoDnslog的后端支持，感谢 @54Pany 。
+2. 加入Fuzz设置界面。
+3. 加入POC设置界面。
+4. 加入 Body(json、xml、multipart) fuzz的支持。
+5. 优化header请求逻辑，降低请求数量。
 ### 2021/12/13
 ##### v0.8.1
 1. 绕过dnslog.cn的异常访问过滤。
