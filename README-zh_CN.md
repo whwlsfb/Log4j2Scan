@@ -23,7 +23,7 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 # ChangeLog
 ### 2021/12/14
 ##### v0.9
-1. 加入GoDnslog的后端支持，感谢 @54Pany 。
+1. 加入[GoDnslog](https://github.com/chennqqi/godnslog)的后端支持，感谢 [@54Pany](https://github.com/54Pany) 。
 2. 加入Fuzz设置界面。
 3. 加入POC设置界面。
 4. 加入 Body(json、xml、multipart) fuzz的支持。
