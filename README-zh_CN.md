@@ -48,6 +48,10 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 
 ![](screenshots/revsuit_dns_backend.png)
 
+![](screenshots/poc_setting.png)
+
+![](screenshots/fuzz_setting.png)
+
 ![](screenshots/detected.png)
 
 
