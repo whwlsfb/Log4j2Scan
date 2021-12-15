@@ -31,6 +31,7 @@ public class Log4j2Scanner implements IScannerCheck {
     private final String[] HEADER_GUESS = new String[]{
             "User-Agent",
             "Referer",
+            "Client-IP",
             "X-Client-IP",
             "X-Remote-IP",
             "X-Remote-Addr",
@@ -45,7 +46,14 @@ public class Log4j2Scanner implements IScannerCheck {
             "X-Api-Version",
             "X-Wap-Profile",
             "Contact",
-            "If-Mondified-Since"
+            "If-Mondified-Since",
+            "X-Custom-IP-Authorization",
+            "X-Forwarded-Host",
+            "X-Forwarded-Server",
+            "X-Host",
+            "X-Original-URL",
+            "X-Rewrite-URL",
+            "Connection"
     };
 
     private final String[] STATIC_FILE_EXT = new String[]{
