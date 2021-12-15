@@ -153,6 +153,7 @@ public class FuzzUIHandler {
         Config.setBoolean(Config.ENABLED_FUZZ_BODY_JSON, enabled_fuzz_body_json.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_BODY_MULTIPART, enabled_fuzz_body_multipart.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_BODY_XML, enabled_fuzz_body_xml.isSelected());
+        JOptionPane.showMessageDialog(mainPanel, "Apply success!");
     }
 
     private String[] GetFuzzModes() {
