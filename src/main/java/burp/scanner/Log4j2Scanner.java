@@ -10,6 +10,7 @@ import burp.utils.*;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -232,29 +233,31 @@ public class Log4j2Scanner implements IScannerCheck {
                     String tmpDomain = backend.getNewPayload();
                     byte[] tmpRawRequest = rawRequest;
                     String exp = poc.generate(tmpDomain);
-                    boolean hasModify = false;
+                    boolean inHeader = false;
                     switch (param.getType()) {
                         case IParameter.PARAM_URL:
-                        case IParameter.PARAM_BODY:
                         case IParameter.PARAM_COOKIE:
+                            inHeader = true;
+                        case IParameter.PARAM_BODY:
                             exp = helper.urlEncode(exp);
                             exp = urlencodeForTomcat(exp);
-                            IParameter newParam = helper.buildParameter(param.getName(), exp, param.getType());
-                            tmpRawRequest = helper.updateParameter(rawRequest, newParam);
-                            hasModify = true;
                             break;
                         case IParameter.PARAM_JSON:
                         case IParameter.PARAM_XML:
                         case IParameter.PARAM_MULTIPART_ATTR:
                         case IParameter.PARAM_XML_ATTR:
-                            //unsupported.
                     }
-                    if (hasModify) {
-                        IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                        tmpReq.getResponse();
-                        domainMap.put(tmpDomain, new ScanItem(param, tmpReq));
-
+                    if (inHeader) {
+                        IParameter newParam = helper.buildParameter(param.getName(), exp, param.getType());
+                        tmpRawRequest = helper.updateParameter(rawRequest, newParam);
+                    } else {
+                        byte[] body = Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length);
+                        byte[] newBody = Utils.Replace(body, new int[]{param.getValueStart() - req.getBodyOffset(), param.getValueEnd() - req.getBodyOffset()}, exp.getBytes(StandardCharsets.UTF_8));
+                        tmpRawRequest = helper.buildHttpMessage(req.getHeaders(), newBody);
                     }
+                    IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                    tmpReq.getResponse();
+                    domainMap.put(tmpDomain, new ScanItem(param, tmpReq));
                 } catch (Exception ex) {
                     parent.stdout.println(ex);
                 }

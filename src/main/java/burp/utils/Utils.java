@@ -92,6 +92,14 @@ public class Utils {
         return String.valueOf(System.currentTimeMillis());
     }
 
+    public static byte[] Replace(byte[] request, int[] selectedIndexRange, byte[] targetBytes) {
+        byte[] result = new byte[request.length - (selectedIndexRange[1] - selectedIndexRange[0]) + targetBytes.length];
+        System.arraycopy(request, 0, result, 0, selectedIndexRange[0]);
+        System.arraycopy(targetBytes, 0, result, selectedIndexRange[0], targetBytes.length);
+        System.arraycopy(request, selectedIndexRange[1], result, selectedIndexRange[0] + targetBytes.length, request.length - selectedIndexRange[1]);
+        return result;
+    }
+
     public static byte[] MD5(byte[] src) {
         if (md == null) {
             try {

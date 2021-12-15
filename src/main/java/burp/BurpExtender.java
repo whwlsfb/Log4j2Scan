@@ -7,7 +7,7 @@ import burp.utils.Utils;
 import java.awt.*;
 import java.io.PrintWriter;
 
-public class BurpExtender implements IBurpExtender, ITab {
+public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     public IExtensionHelpers helpers;
     public IBurpExtenderCallbacks callbacks;
@@ -28,6 +28,7 @@ public class BurpExtender implements IBurpExtender, ITab {
         this.uiHandler = new Log4j2ScanUIHandler(this);
         callbacks.addSuiteTab(this.uiHandler);
         this.reloadScanner();
+        callbacks.registerExtensionStateListener(this);
     }
 
     public void reloadScanner() {
@@ -40,12 +41,10 @@ public class BurpExtender implements IBurpExtender, ITab {
     }
 
     @Override
-    public String getTabCaption() {
-        return null;
-    }
-
-    @Override
-    public Component getUiComponent() {
-        return null;
+    public void extensionUnloaded() {
+        if (scanner != null) {
+            scanner.close();
+            callbacks.removeScannerCheck(scanner);
+        }
     }
 }

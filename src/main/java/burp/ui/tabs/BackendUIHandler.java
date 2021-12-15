@@ -5,7 +5,9 @@ import burp.utils.Config;
 import burp.utils.UIUtil;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 
@@ -32,6 +34,8 @@ public class BackendUIHandler {
 
     private JTextField GoDnslogIdentifierInput;
     private JTextField GoDnslogTokenInput;
+    private Insets buttonMargin = new Insets(0, 3, 0, 3);
+
 
     public BackendUIHandler(BurpExtender parent) {
         this.parent = parent;
@@ -53,6 +57,7 @@ public class BackendUIHandler {
             Config.set(Config.CURRENT_BACKEND, backendSelector.getSelectedItem().toString());
             this.apply();
         });
+        applyBtn.setMargin(buttonMargin);
         panel1.add(new JLabel("Use backend: "));
         panel1.add(backendSelector);
         panel1.add(applyBtn);
@@ -115,6 +120,8 @@ public class BackendUIHandler {
             this.loadConfig();
             this.apply();
         });
+        saveBtn.setMargin(buttonMargin);
+        applyBtn.setMargin(buttonMargin);
         subPanel3.add(saveBtn);
         subPanel3.add(applyBtn);
 
@@ -166,6 +173,8 @@ public class BackendUIHandler {
             this.loadConfig();
             this.apply();
         });
+        saveBtn.setMargin(buttonMargin);
+        applyBtn.setMargin(buttonMargin);
         subPanel4.add(saveBtn);
         subPanel4.add(applyBtn);
 
@@ -217,6 +226,8 @@ public class BackendUIHandler {
             this.loadConfig();
             this.apply();
         });
+        saveBtn.setMargin(buttonMargin);
+        applyBtn.setMargin(buttonMargin);
         subPanel4.add(saveBtn);
         subPanel4.add(applyBtn);
 
@@ -262,6 +273,8 @@ public class BackendUIHandler {
             this.loadConfig();
             this.apply();
         });
+        saveBtn.setMargin(buttonMargin);
+        applyBtn.setMargin(buttonMargin);
         subPanel3.add(saveBtn);
         subPanel3.add(applyBtn);
 
