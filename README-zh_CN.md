@@ -68,11 +68,6 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 ![](screenshots/detected.png)
 
 
-
-# 微信交流群
-
-![](wx_group_qrcode.png)
-
 # 鸣谢
 插件中部分代码借鉴于以下项目
 
