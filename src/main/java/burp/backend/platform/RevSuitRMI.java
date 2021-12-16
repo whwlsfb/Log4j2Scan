@@ -5,6 +5,7 @@ import burp.poc.IPOC;
 import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +39,12 @@ public class RevSuitRMI implements IBackend {
     String rootRMIUrl;
     String token;
     String rmiFlag = "";
+    boolean serverSideSupportBatchCheck = false;
+
+    @Override
+    public boolean supportBatchCheck() {
+        return serverSideSupportBatchCheck;
+    }
 
     public RevSuitRMI() {
         this.token = Config.get(Config.REVSUIT_RMI_TOKEN);
@@ -46,6 +53,7 @@ public class RevSuitRMI implements IBackend {
         String rootRMIUrl = Config.get(Config.REVSUIT_RMI_ADDR);
         this.rootRMIUrl = rootRMIUrl.endsWith("/") ? rootRMIUrl : rootRMIUrl + "/";
         initRMIEnv();
+        checkServiceSideBatchCheckSupport();
     }
 
     private void initRMIEnv() {
@@ -56,14 +64,41 @@ public class RevSuitRMI implements IBackend {
             createRMIRuleReq.put("name", String.format("%s Create by Log4j2Scan", flag));
             JSONObject rmiConfig = JSONObject.parseObject(request("revsuit/api/rule/rmi", "POST", createRMIRuleReq.toString()));
             if (rmiConfig.get("status").equals("succeed")) {
-                Utils.Callback.printOutput(String.format("create revsuit rmi rule '%s' succeed!\r\n", flag));
+                Utils.Callback.printOutput(String.format("Create RevSuit rmi rule '%s' succeed!\r\n", flag));
                 rmiFlag = flag;
             } else {
-                Utils.Callback.printOutput(String.format("create revsuit rmi rule '%s' failed! msg: %s\r\n", flag, rmiConfig.get("status")));
+                Utils.Callback.printOutput(String.format("Create RevSuit rmi rule '%s' failed! msg: %s\r\n", flag, rmiConfig.get("status")));
             }
         } catch (Exception ex) {
             Utils.Callback.printOutput(ex.toString());
         }
+    }
+
+    private void checkServiceSideBatchCheckSupport() {
+        String[] testResult = batchCheck(new String[0]);
+        serverSideSupportBatchCheck = testResult != null;
+        Utils.Callback.printOutput(String.format("Service-side RevSuit %s batch check!\r\n", serverSideSupportBatchCheck ? "support" : "unsupported"));
+    }
+
+    public String[] batchCheck(String[] payloads) {
+        List<String> found = new ArrayList<>();
+        try {
+            JSONObject findDomainReq = new JSONObject();
+            findDomainReq.put("rmis", cleanPayload(payloads));
+            JSONObject foundRecords = JSONObject.parseObject(request("revsuit/api/record/rmi/batchFind", "POST", findDomainReq.toString()));
+            return foundRecords.getJSONArray("found").toArray(new String[0]);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private String[] cleanPayload(String[] payloads) {
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < payloads.length; i++) {
+            String payload = payloads[i];
+            result.add(payload.substring(payload.indexOf(rmiFlag)));
+        }
+        return result.toArray(new String[0]);
     }
 
     private String request(String url) throws Exception {

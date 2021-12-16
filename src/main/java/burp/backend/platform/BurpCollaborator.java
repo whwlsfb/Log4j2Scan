@@ -13,10 +13,18 @@ public class BurpCollaborator implements IBackend {
     }
 
     @Override
+    public boolean supportBatchCheck() {
+        return false;
+    }
+
+    @Override
     public String getName() {
         return "BurpCollaborator";
     }
-
+    @Override
+    public String[] batchCheck(String[] payloads) {
+        return new String[0];
+    }
     @Override
     public String getNewPayload() {
         return bcContext.generatePayload(true);

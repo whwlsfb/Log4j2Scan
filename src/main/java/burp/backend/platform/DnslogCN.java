@@ -49,6 +49,11 @@ public class DnslogCN implements IBackend {
         }
     }
 
+    @Override
+    public boolean supportBatchCheck() {
+        return false;
+    }
+
     private void startSessionHeartbeat() {
         timer.schedule(new TimerTask() {
             @Override
@@ -94,7 +99,10 @@ public class DnslogCN implements IBackend {
     public boolean CheckResult(String domain) {
         return dnsLogResultCache.contains(domain.toLowerCase());
     }
-
+    @Override
+    public String[] batchCheck(String[] payloads) {
+        return new String[0];
+    }
     @Override
     public boolean getState() {
         return rootDomain != "";

@@ -433,24 +433,36 @@ public class Log4j2Scanner implements IScannerCheck {
 
     private List<IScanIssue> finalCheck(IHttpRequestResponse baseRequestResponse, IRequestInfo req, Map<String, ScanItem> domainMap) {
         List<IScanIssue> issues = new ArrayList<>();
-        if (backend.flushCache(domainMap.size())) {
-            for (Map.Entry<String, ScanItem> domainItem :
-                    domainMap.entrySet()) {
-                ScanItem item = domainItem.getValue();
-                boolean hasIssue = backend.CheckResult(domainItem.getKey());
-                if (hasIssue) {
-                    issues.add(new Log4j2Issue(baseRequestResponse.getHttpService(),
-                            req.getUrl(),
-                            new IHttpRequestResponse[]{baseRequestResponse, item.TmpRequest},
-                            "Log4j2 RCE Detected",
-                            String.format("Vulnerable param is \"%s\" in %s.", item.IsHeader ? item.HeaderName : item.Param.getName(), item.IsHeader ? "Header" : getTypeName(item.Param.getType())),
-                            "High"));
-                }
+        if (backend.supportBatchCheck()) {
+            String[] vulPoint = backend.batchCheck(domainMap.keySet().toArray(new String[0]));
+            for (String domain : vulPoint) {
+                ScanItem item = domainMap.get(domain);
+                issues.add(getIssue(baseRequestResponse, req, item));
             }
         } else {
-            parent.stdout.println("get backend result failed!\r\n");
+            if (backend.flushCache(domainMap.size())) {
+                for (Map.Entry<String, ScanItem> domainItem :
+                        domainMap.entrySet()) {
+                    ScanItem item = domainItem.getValue();
+                    boolean hasIssue = backend.CheckResult(domainItem.getKey());
+                    if (hasIssue) {
+                        issues.add(getIssue(baseRequestResponse, req, item));
+                    }
+                }
+            } else {
+                parent.stdout.println("get backend result failed!\r\n");
+            }
         }
         return issues;
+    }
+
+    private Log4j2Issue getIssue(IHttpRequestResponse baseRequestResponse, IRequestInfo req, ScanItem item) {
+        return new Log4j2Issue(baseRequestResponse.getHttpService(),
+                req.getUrl(),
+                new IHttpRequestResponse[]{baseRequestResponse, item.TmpRequest},
+                "Log4j2 RCE Detected",
+                String.format("Vulnerable param is \"%s\" in %s.", item.IsHeader ? item.HeaderName : item.Param.getName(), item.IsHeader ? "Header" : getTypeName(item.Param.getType())),
+                "High");
     }
 
     private String getTypeName(int typeId) {

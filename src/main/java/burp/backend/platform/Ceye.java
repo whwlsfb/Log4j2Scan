@@ -27,6 +27,14 @@ public class Ceye implements IBackend {
     }
 
     @Override
+    public boolean supportBatchCheck() {
+        return false;
+    }
+    @Override
+    public String[] batchCheck(String[] payloads) {
+        return new String[0];
+    }
+    @Override
     public String getName() {
         return "Ceye.io";
     }

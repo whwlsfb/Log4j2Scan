@@ -35,6 +35,12 @@ public class RevSuitDNS implements IBackend {
     String rootDomain;
     String token;
     String dnsFlag = "";
+    boolean serverSideSupportBatchCheck = false;
+
+    @Override
+    public boolean supportBatchCheck() {
+        return serverSideSupportBatchCheck;
+    }
 
     public RevSuitDNS() {
         this.token = Config.get(Config.REVSUIT_DNS_TOKEN);
@@ -42,6 +48,7 @@ public class RevSuitDNS implements IBackend {
         this.serverAddr = serverAddr.endsWith("/") ? serverAddr : serverAddr + "/";
         this.rootDomain = Config.get(Config.REVSUIT_DNS_DOMAIN);
         initDNSEnv();
+        checkServiceSideBatchCheckSupport();
     }
 
     private void initDNSEnv() {
@@ -53,13 +60,32 @@ public class RevSuitDNS implements IBackend {
             createDNSRuleReq.put("value", "127.0.0.1");
             JSONObject rmiConfig = JSONObject.parseObject(request("revsuit/api/rule/dns", "POST", createDNSRuleReq.toString()));
             if (rmiConfig.get("status").equals("succeed")) {
-                Utils.Callback.printOutput(String.format("create revsuit dns rule '%s' succeed!\r\n", flag));
+                Utils.Callback.printOutput(String.format("Create RevSuit dns rule '%s' succeed!\r\n", flag));
                 dnsFlag = flag;
             } else {
-                Utils.Callback.printOutput(String.format("create revsuit dns rule '%s' failed! msg: %s\r\n", flag, rmiConfig.get("status")));
+                Utils.Callback.printOutput(String.format("Create RevSuit dns rule '%s' failed! msg: %s\r\n", flag, rmiConfig.get("status")));
             }
         } catch (Exception ex) {
             Utils.Callback.printOutput(ex.toString());
+        }
+    }
+
+
+    private void checkServiceSideBatchCheckSupport() {
+        String[] testResult = batchCheck(new String[0]);
+        serverSideSupportBatchCheck = testResult != null;
+        Utils.Callback.printOutput(String.format("Service-side RevSuit %s batch check!\r\n", serverSideSupportBatchCheck ? "support" : "unsupported"));
+    }
+
+    public String[] batchCheck(String[] payloads) {
+        List<String> found = new ArrayList<>();
+        try {
+            JSONObject findDomainReq = new JSONObject();
+            findDomainReq.put("domains", payloads);
+            JSONObject foundRecords = JSONObject.parseObject(request("revsuit/api/record/dns/batchFind", "POST", findDomainReq.toString()));
+            return foundRecords.getJSONArray("found").toArray(new String[0]);
+        } catch (Exception ex) {
+            return null;
         }
     }
 

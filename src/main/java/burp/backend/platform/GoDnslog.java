@@ -28,6 +28,11 @@ public class GoDnslog implements IBackend {
         this.token = Config.get(Config.GODNSLOG_TOKEN);
     }
 
+    @Override
+    public boolean supportBatchCheck() {
+        return false;
+    }
+
     public String getSign(String urlParam) {
         StringBuilder hashBuilder = new StringBuilder();
         Map<String, String> paraMap = new TreeMap<>();
@@ -54,6 +59,11 @@ public class GoDnslog implements IBackend {
     @Override
     public String getNewPayload() {
         return Utils.getCurrentTimeMillis() + Utils.GetRandomString(5).toLowerCase() + "." + rootDomain;
+    }
+
+    @Override
+    public String[] batchCheck(String[] payloads) {
+        return new String[0];
     }
 
     @Override
