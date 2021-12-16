@@ -20,6 +20,12 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 - Header
 - Body(x-www-form-urlencoded、json、xml、multipart)
 
+# 编译
+需要Maven、JDK 11.0或更高版本。
+```
+$ mvn package
+```
+
 # ChangeLog
 ### 2021/12/15
 ##### v0.9
