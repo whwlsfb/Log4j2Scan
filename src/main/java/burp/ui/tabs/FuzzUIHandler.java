@@ -23,6 +23,7 @@ public class FuzzUIHandler {
     private JCheckBox enabled_fuzz_body_json;
     private JCheckBox enabled_fuzz_body_xml;
     private JCheckBox enabled_fuzz_body_multipart;
+    private JCheckBox enabled_fuzz_bad_json;
 
     public FuzzUIHandler(BurpExtender parent) {
         this.parent = parent;
@@ -87,6 +88,7 @@ public class FuzzUIHandler {
                 enabled_fuzz_body_json.setEnabled(false);
                 enabled_fuzz_body_xml.setEnabled(false);
                 enabled_fuzz_body_multipart.setEnabled(false);
+                enabled_fuzz_bad_json.setEnabled(false);
             }
         });
         subPanel4.add(new JLabel("Enable Body Fuzz: "));
@@ -112,6 +114,11 @@ public class FuzzUIHandler {
         subPanel8.add(new JLabel("Enable Body-Multipart Fuzz: "));
         subPanel8.add(enabled_fuzz_body_multipart);
 
+        JPanel subPanel9 = UIUtil.GetXJPanel();
+        enabled_fuzz_bad_json = new JCheckBox();
+        subPanel9.add(new JLabel("Enable Bad-json Fuzz: "));
+        subPanel9.add(enabled_fuzz_bad_json);
+
         JButton applyBtn = new JButton("Apply");
         applyBtn.setMaximumSize(applyBtn.getPreferredSize());
         applyBtn.addActionListener(e -> {
@@ -127,6 +134,7 @@ public class FuzzUIHandler {
         panel1.add(subPanel6);
         panel1.add(subPanel7);
         panel1.add(subPanel8);
+        panel1.add(subPanel9);
         panel1.add(applyBtn);
         return panel1;
     }
@@ -141,6 +149,7 @@ public class FuzzUIHandler {
         enabled_fuzz_body_json.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY_JSON, true));
         enabled_fuzz_body_multipart.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY_MULTIPART, true));
         enabled_fuzz_body_xml.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY_XML, true));
+        enabled_fuzz_bad_json.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BAD_JSON, true));
     }
 
     private void saveConfig() {
@@ -153,6 +162,7 @@ public class FuzzUIHandler {
         Config.setBoolean(Config.ENABLED_FUZZ_BODY_JSON, enabled_fuzz_body_json.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_BODY_MULTIPART, enabled_fuzz_body_multipart.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_BODY_XML, enabled_fuzz_body_xml.isSelected());
+        Config.setBoolean(Config.ENABLED_FUZZ_BAD_JSON, enabled_fuzz_bad_json.isSelected());
         JOptionPane.showMessageDialog(mainPanel, "Apply success!");
     }
 

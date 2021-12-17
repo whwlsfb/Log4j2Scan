@@ -25,6 +25,7 @@ public class Config {
     public static final String ENABLED_FUZZ_BODY_JSON = "enabled_fuzz_body_json";
     public static final String ENABLED_FUZZ_BODY_XML = "enabled_fuzz_body_xml";
     public static final String ENABLED_FUZZ_BODY_MULTIPART = "enabled_fuzz_body_multipart";
+    public static final String ENABLED_FUZZ_BAD_JSON = "enabled_fuzz_bad_json";
     public static final String FUZZ_MODE = "fuzz_mode";
 
     public static String get(String name) {

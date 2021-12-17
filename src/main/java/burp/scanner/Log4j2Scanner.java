@@ -367,6 +367,23 @@ public class Log4j2Scanner implements IScannerCheck {
         return domainMap;
     }
 
+    private Map<String, ScanItem> badJsonFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        Map<String, ScanItem> domainMap = new HashMap<>();
+        boolean canFuzz = false;
+        
+        for (IPOC poc : getSupportedPOCs()) {
+            String tmpDomain = backend.getNewPayload();
+            String exp = poc.generate(tmpDomain);
+            String finalPaylad = String.format("{\"%s\":%d%s%d}", Utils.GetRandomString(Utils.GetRandomNumber(3, 10)), Utils.GetRandomNumber(100, Integer.MAX_VALUE), exp, Utils.GetRandomNumber(100, Integer.MAX_VALUE));
+            IParameter fakeParam = helper.buildParameter("Bad-json Fuzz", exp, IParameter.PARAM_JSON);
+            byte[] newRequest = helper.buildHttpMessage(req.getHeaders(), finalPaylad.getBytes(StandardCharsets.UTF_8));
+            IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), newRequest);
+            tmpReq.getResponse();
+            domainMap.put(tmpDomain, new ScanItem(fakeParam, tmpReq));
+        }
+        return domainMap;
+    }
+
     private Map<String, ScanItem> paramsFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
         Map<String, ScanItem> domainMap = new HashMap<>();
         byte[] rawRequest = baseRequestResponse.getRequest();
@@ -417,6 +434,10 @@ public class Log4j2Scanner implements IScannerCheck {
                         tmpRawRequest = helper.updateParameter(rawRequest, newParam);
                     } else {
                         byte[] body = Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length);
+                        boolean isJsonNumber = param.getType() == IParameter.PARAM_JSON && body[param.getValueStart() - req.getBodyOffset() - 1] != 34;
+                        if (isJsonNumber) {
+                            exp = "\"" + exp + "\"";
+                        }
                         byte[] newBody = Utils.Replace(body, new int[]{param.getValueStart() - req.getBodyOffset(), param.getValueEnd() - req.getBodyOffset()}, exp.getBytes(StandardCharsets.UTF_8));
                         tmpRawRequest = helper.buildHttpMessage(req.getHeaders(), newBody);
                     }
