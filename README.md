@@ -16,6 +16,13 @@ Vulnerability detection only supports the following types for now
 - Header
 - Body(x-www-form-urlencoded, json, xml, multipart)
 
+
+# Build
+Maven and JDK 11.0 or later is recommended
+```
+$ mvn package
+```
+
 # ChangeLog
 ### 2021/12/15
 ##### v0.9

@@ -1,6 +1,6 @@
 # Log4j2Scan
 
-> 本工具仅供学习研究、自查使用，切勿用于非法用途，由使用该工具产生的一切风险均与本人无关！
+> 本工具无攻击性，仅具有漏洞探测功能，且仅供学习研究自查使用，切勿用于非法用途，由使用该工具产生的一切风险均与本人无关！
 
 > dnslog.cn由于请求人数过多，时有无法访问接口的问题，若出现无法扫描的情况时，请尝试通过菜单切换dnslog平台。
 
@@ -19,6 +19,12 @@ Log4j2 远程代码执行漏洞，BurpSuite被动扫描插件。
 - Cookie
 - Header
 - Body(x-www-form-urlencoded、json、xml、multipart)
+
+# 编译
+需要Maven、JDK 11.0或更高版本。
+```
+$ mvn package
+```
 
 # ChangeLog
 ### 2021/12/15
