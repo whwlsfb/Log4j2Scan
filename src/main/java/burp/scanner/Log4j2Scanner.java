@@ -395,7 +395,6 @@ public class Log4j2Scanner implements IScannerCheck {
                 IParameter fakeParam = helper.buildParameter("Bad-json Fuzz", exp, IParameter.PARAM_JSON);
                 byte[] newRequest = helper.buildHttpMessage(tmpHeaders, finalPaylad.getBytes(StandardCharsets.UTF_8));
                 IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), newRequest);
-                tmpReq.getResponse();
                 domainMap.put(tmpDomain, new ScanItem(fakeParam, tmpReq));
             }
         }
@@ -460,7 +459,6 @@ public class Log4j2Scanner implements IScannerCheck {
                         tmpRawRequest = helper.buildHttpMessage(req.getHeaders(), newBody);
                     }
                     IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                    tmpReq.getResponse();
                     domainMap.put(tmpDomain, new ScanItem(param, tmpReq));
                 } catch (Exception ex) {
                     parent.stdout.println(ex);
