@@ -86,7 +86,8 @@ public class RevSuitRMI implements IBackend {
             JSONObject findDomainReq = new JSONObject();
             findDomainReq.put("rmis", cleanPayload(payloads));
             JSONObject foundRecords = JSONObject.parseObject(request("revsuit/api/record/rmi/batchFind", "POST", findDomainReq.toString()));
-            return foundRecords.getJSONArray("found").toArray(new String[0]);
+            foundRecords.getJSONArray("found").forEach(f -> found.add(appendBefore((String) f)));
+            return found.toArray(new String[0]);
         } catch (Exception ex) {
             return null;
         }
@@ -121,7 +122,11 @@ public class RevSuitRMI implements IBackend {
 
     @Override
     public String getNewPayload() {
-        return rootRMIUrl + rmiFlag + "/" + Utils.GetRandomString(10);
+        return appendBefore(rmiFlag + "/" + Utils.GetRandomString(10));
+    }
+
+    public String appendBefore(String randomStr) {
+        return rootRMIUrl + randomStr;
     }
 
     @Override
