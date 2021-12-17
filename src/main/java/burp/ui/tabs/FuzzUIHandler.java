@@ -116,7 +116,7 @@ public class FuzzUIHandler {
 
         JPanel subPanel9 = UIUtil.GetXJPanel();
         enabled_fuzz_bad_json = new JCheckBox();
-        subPanel9.add(new JLabel("Enable Bad-json Fuzz: "));
+        subPanel9.add(new JLabel("Enable Bad-Json Fuzz: "));
         subPanel9.add(enabled_fuzz_bad_json);
 
         JButton applyBtn = new JButton("Apply");

@@ -190,6 +190,9 @@ public class Log4j2Scanner implements IScannerCheck {
             } else {
                 domainMap.putAll(crazyFuzz(baseRequestResponse, req));
             }
+            if (Config.getBoolean(Config.ENABLED_FUZZ_BAD_JSON, true)) {
+                domainMap.putAll(badJsonFuzz(baseRequestResponse, req));
+            }
             try {
                 Thread.sleep(2000); //sleep 2s, wait for network delay.
             } catch (InterruptedException e) {
@@ -370,16 +373,31 @@ public class Log4j2Scanner implements IScannerCheck {
     private Map<String, ScanItem> badJsonFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
         Map<String, ScanItem> domainMap = new HashMap<>();
         boolean canFuzz = false;
-        
-        for (IPOC poc : getSupportedPOCs()) {
-            String tmpDomain = backend.getNewPayload();
-            String exp = poc.generate(tmpDomain);
-            String finalPaylad = String.format("{\"%s\":%d%s%d}", Utils.GetRandomString(Utils.GetRandomNumber(3, 10)), Utils.GetRandomNumber(100, Integer.MAX_VALUE), exp, Utils.GetRandomNumber(100, Integer.MAX_VALUE));
-            IParameter fakeParam = helper.buildParameter("Bad-json Fuzz", exp, IParameter.PARAM_JSON);
-            byte[] newRequest = helper.buildHttpMessage(req.getHeaders(), finalPaylad.getBytes(StandardCharsets.UTF_8));
-            IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), newRequest);
-            tmpReq.getResponse();
-            domainMap.put(tmpDomain, new ScanItem(fakeParam, tmpReq));
+        List<String> rawHeaders = req.getHeaders();
+        List<String> tmpHeaders = new ArrayList<>(rawHeaders);
+        for (int i = 1; i < rawHeaders.size(); i++) {
+            HttpHeader header = new HttpHeader(rawHeaders.get(i));
+            if (header.Name.equalsIgnoreCase("content-type")) {  //has content-type header, maybe accept application/json?
+                header.Value = "application/json;charset=UTF-8";
+                tmpHeaders.set(i, header.toString());
+                canFuzz = true;
+            }
+        }
+        if (canFuzz) {
+            for (IPOC poc : getSupportedPOCs()) {
+                String tmpDomain = backend.getNewPayload();
+                String exp = poc.generate(tmpDomain);
+                String finalPaylad = String.format("{\"%s\":%d%s%d}",   //try to create a bad-json.
+                        Utils.GetRandomString(Utils.GetRandomNumber(3, 10)),
+                        Utils.GetRandomNumber(100, Integer.MAX_VALUE),
+                        exp,
+                        Utils.GetRandomNumber(100, Integer.MAX_VALUE));
+                IParameter fakeParam = helper.buildParameter("Bad-json Fuzz", exp, IParameter.PARAM_JSON);
+                byte[] newRequest = helper.buildHttpMessage(tmpHeaders, finalPaylad.getBytes(StandardCharsets.UTF_8));
+                IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), newRequest);
+                tmpReq.getResponse();
+                domainMap.put(tmpDomain, new ScanItem(fakeParam, tmpReq));
+            }
         }
         return domainMap;
     }
