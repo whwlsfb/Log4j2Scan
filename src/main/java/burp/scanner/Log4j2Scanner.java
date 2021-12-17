@@ -199,7 +199,7 @@ public class Log4j2Scanner implements IScannerCheck {
                 parent.stdout.println(e);
             }
             issues.addAll(finalCheck(baseRequestResponse, req, domainMap));
-            parent.stdout.println(String.format("Scan complete: %s", req.getUrl()));
+            parent.stdout.println("Scan complete: " + req.getUrl() + " - " + (issues.size() > 0 ? String.format("found %d issue.", issues.size()) : "No issue found."));
         }
         return issues;
     }
@@ -451,7 +451,7 @@ public class Log4j2Scanner implements IScannerCheck {
                         tmpRawRequest = helper.updateParameter(rawRequest, newParam);
                     } else {
                         byte[] body = Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length);
-                        boolean isJsonNumber = param.getType() == IParameter.PARAM_JSON && body[param.getValueStart() - req.getBodyOffset() - 1] != 34;
+                        boolean isJsonNumber = param.getType() == IParameter.PARAM_JSON && body[param.getValueStart() - req.getBodyOffset() - 1] != 34; // ascii:34 = "
                         if (isJsonNumber) {
                             exp = "\"" + exp + "\"";
                         }

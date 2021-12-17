@@ -57,33 +57,32 @@ public class FuzzUIHandler {
         subPanel0.add(fuzzModeSelector);
 
         JPanel subPanel1 = UIUtil.GetXJPanel();
-        enabled_fuzz_header = new JCheckBox();
-        subPanel1.add(new JLabel("Enable Header Fuzz: "));
+        enabled_fuzz_header = new JCheckBox("Enable Header Fuzz");
         subPanel1.add(enabled_fuzz_header);
 
         JPanel subPanel2 = UIUtil.GetXJPanel();
-        enabled_fuzz_url = new JCheckBox();
-        subPanel2.add(new JLabel("Enable Url Fuzz: "));
+        enabled_fuzz_url = new JCheckBox("Enable Url Fuzz");
         subPanel2.add(enabled_fuzz_url);
 
         JPanel subPanel3 = UIUtil.GetXJPanel();
-        enabled_fuzz_cookie = new JCheckBox();
-        subPanel3.add(new JLabel("Enable Cookie Fuzz: "));
+        enabled_fuzz_cookie = new JCheckBox("Enable Cookie Fuzz");
         subPanel3.add(enabled_fuzz_cookie);
 
         JPanel subPanel4 = UIUtil.GetXJPanel();
-        enabled_fuzz_body = new JCheckBox();
+        enabled_fuzz_body = new JCheckBox("Enable Body Fuzz");
         enabled_fuzz_body.addActionListener(e -> {
             if (enabled_fuzz_body.isSelected()) {
                 enabled_fuzz_body_form.setEnabled(true);
                 enabled_fuzz_body_json.setEnabled(true);
                 enabled_fuzz_body_xml.setEnabled(true);
                 enabled_fuzz_body_multipart.setEnabled(true);
+                enabled_fuzz_bad_json.setEnabled(true);
             } else {
                 enabled_fuzz_body_form.setSelected(false);
                 enabled_fuzz_body_json.setSelected(false);
                 enabled_fuzz_body_xml.setSelected(false);
                 enabled_fuzz_body_multipart.setSelected(false);
+                enabled_fuzz_bad_json.setSelected(false);
                 enabled_fuzz_body_form.setEnabled(false);
                 enabled_fuzz_body_json.setEnabled(false);
                 enabled_fuzz_body_xml.setEnabled(false);
@@ -91,32 +90,26 @@ public class FuzzUIHandler {
                 enabled_fuzz_bad_json.setEnabled(false);
             }
         });
-        subPanel4.add(new JLabel("Enable Body Fuzz: "));
         subPanel4.add(enabled_fuzz_body);
 
         JPanel subPanel5 = UIUtil.GetXJPanel();
-        enabled_fuzz_body_form = new JCheckBox();
-        subPanel5.add(new JLabel("Enable Body-Form Fuzz: "));
+        enabled_fuzz_body_form = new JCheckBox("Enable Body-Form Fuzz");
         subPanel5.add(enabled_fuzz_body_form);
 
         JPanel subPanel6 = UIUtil.GetXJPanel();
-        enabled_fuzz_body_json = new JCheckBox();
-        subPanel6.add(new JLabel("Enable Body-Json Fuzz: "));
+        enabled_fuzz_body_json = new JCheckBox("Enable Body-Json Fuzz");
         subPanel6.add(enabled_fuzz_body_json);
 
         JPanel subPanel7 = UIUtil.GetXJPanel();
-        enabled_fuzz_body_xml = new JCheckBox();
-        subPanel7.add(new JLabel("Enable Body-Xml Fuzz: "));
+        enabled_fuzz_body_xml = new JCheckBox("Enable Body-Xml Fuzz");
         subPanel7.add(enabled_fuzz_body_xml);
 
         JPanel subPanel8 = UIUtil.GetXJPanel();
-        enabled_fuzz_body_multipart = new JCheckBox();
-        subPanel8.add(new JLabel("Enable Body-Multipart Fuzz: "));
+        enabled_fuzz_body_multipart = new JCheckBox("Enable Body-Multipart Fuzz");
         subPanel8.add(enabled_fuzz_body_multipart);
 
         JPanel subPanel9 = UIUtil.GetXJPanel();
-        enabled_fuzz_bad_json = new JCheckBox();
-        subPanel9.add(new JLabel("Enable Bad-Json Fuzz: "));
+        enabled_fuzz_bad_json = new JCheckBox("Enable Bad-Json Fuzz");
         subPanel9.add(enabled_fuzz_bad_json);
 
         JButton applyBtn = new JButton("Apply");
