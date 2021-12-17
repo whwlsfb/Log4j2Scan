@@ -112,4 +112,12 @@ public class Utils {
         secretBytes = md.digest(src);
         return secretBytes;
     }
+
+    public static String[] splitString(String str) {
+        String[] result = new String[str.length()];
+        for (int i = 0; i < str.length(); i++) {
+            result[i] = String.valueOf(str.charAt(i));
+        }
+        return result;
+    }
 }
