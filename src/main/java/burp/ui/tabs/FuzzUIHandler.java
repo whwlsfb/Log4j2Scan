@@ -142,7 +142,7 @@ public class FuzzUIHandler {
         enabled_fuzz_body_json.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY_JSON, true));
         enabled_fuzz_body_multipart.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY_MULTIPART, true));
         enabled_fuzz_body_xml.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY_XML, true));
-        enabled_fuzz_bad_json.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BAD_JSON, true));
+        enabled_fuzz_bad_json.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BAD_JSON, false));
     }
 
     private void saveConfig() {

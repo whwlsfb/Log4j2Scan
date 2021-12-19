@@ -190,7 +190,7 @@ public class Log4j2Scanner implements IScannerCheck {
             } else {
                 domainMap.putAll(crazyFuzz(baseRequestResponse, req));
             }
-            if (Config.getBoolean(Config.ENABLED_FUZZ_BAD_JSON, true)) {
+            if (Config.getBoolean(Config.ENABLED_FUZZ_BAD_JSON, false)) {
                 domainMap.putAll(badJsonFuzz(baseRequestResponse, req));
             }
             try {
