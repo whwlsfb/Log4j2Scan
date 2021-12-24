@@ -6,7 +6,7 @@
 
     <groupId>cn.wanghw</groupId>
     <artifactId>Log4j2Scan</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.10-SNAPSHOT</version>
 
     <build>
         <plugins>
