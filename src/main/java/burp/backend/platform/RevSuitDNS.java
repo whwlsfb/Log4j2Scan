@@ -104,7 +104,7 @@ public class RevSuitDNS implements IBackend {
 
     @Override
     public String getName() {
-        return "RevSuit-RMI";
+        return "RevSuit-DNS";
     }
 
     @Override
