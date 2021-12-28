@@ -44,8 +44,12 @@ public class Utils {
     }
 
     public static String confusionChars(String[] _chars) {
-        StringBuilder result = new StringBuilder();
         int confusionCount = Utils.GetRandomNumber(1, _chars.length);
+        return confusionChars(_chars, confusionCount);
+    }
+
+    public static String confusionChars(String[] _chars, int confusionCount) {
+        StringBuilder result = new StringBuilder();
         int[] confustionCharIndexs = Utils.getRandomIndex(confusionCount, _chars.length);
         for (int i = 0; i < _chars.length; i++) {
             int finalI = i;
