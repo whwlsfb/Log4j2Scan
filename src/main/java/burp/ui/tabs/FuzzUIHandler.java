@@ -15,6 +15,7 @@ public class FuzzUIHandler {
     private JTabbedPane settingsPanel;
 
     private JComboBox fuzzModeSelector;
+    private JComboBox scanModeSelector;
     private JCheckBox enabled_fuzz_header;
     private JCheckBox enabled_fuzz_url;
     private JCheckBox enabled_fuzz_body;
@@ -55,6 +56,13 @@ public class FuzzUIHandler {
         fuzzModeSelector.setSelectedIndex(0);
         subPanel0.add(new JLabel("Fuzz Mode: "));
         subPanel0.add(fuzzModeSelector);
+
+        JPanel subPanel10 = UIUtil.GetXJPanel();
+        scanModeSelector = new JComboBox(GetScanModes());
+        scanModeSelector.setMaximumSize(scanModeSelector.getPreferredSize());
+        scanModeSelector.setSelectedIndex(0);
+        subPanel10.add(new JLabel("Scan Mode: "));
+        subPanel10.add(scanModeSelector);
 
         JPanel subPanel1 = UIUtil.GetXJPanel();
         enabled_fuzz_header = new JCheckBox("Enable Header Fuzz");
@@ -119,6 +127,7 @@ public class FuzzUIHandler {
         });
 
         panel1.add(subPanel0);
+        panel1.add(subPanel10);
         panel1.add(subPanel1);
         panel1.add(subPanel2);
         panel1.add(subPanel3);
@@ -134,6 +143,7 @@ public class FuzzUIHandler {
 
     private void loadConfig() {
         fuzzModeSelector.setSelectedItem(Config.get(Config.FUZZ_MODE, Config.FuzzMode.EachFuzz.name()));
+        scanModeSelector.setSelectedItem(Config.get(Config.SCAN_MODE, Config.ScanMode.Passive.name()));
         enabled_fuzz_header.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_HEADER, true));
         enabled_fuzz_url.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_URL, true));
         enabled_fuzz_body.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY, true));
@@ -147,6 +157,7 @@ public class FuzzUIHandler {
 
     private void saveConfig() {
         Config.set(Config.FUZZ_MODE, fuzzModeSelector.getSelectedItem().toString());
+        Config.set(Config.SCAN_MODE, scanModeSelector.getSelectedItem().toString());
         Config.setBoolean(Config.ENABLED_FUZZ_HEADER, enabled_fuzz_header.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_URL, enabled_fuzz_url.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_BODY, enabled_fuzz_body.isSelected());
@@ -164,6 +175,15 @@ public class FuzzUIHandler {
         Config.FuzzMode[] backends = Config.FuzzMode.values();
         for (Config.FuzzMode backend : backends) {
             algStrs.add(backend.name().replace('_', '/'));
+        }
+        return algStrs.toArray(new String[algStrs.size()]);
+    }
+
+    private String[] GetScanModes() {
+        ArrayList<String> algStrs = new ArrayList<String>();
+        Config.ScanMode[] items = Config.ScanMode.values();
+        for (Config.ScanMode item : items) {
+            algStrs.add(item.name().replace('_', '/'));
         }
         return algStrs.toArray(new String[algStrs.size()]);
     }

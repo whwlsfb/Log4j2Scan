@@ -68,6 +68,7 @@ public class Log4j2Scanner implements IScannerCheck {
     private final String[] STATIC_FILE_EXT = new String[]{
             "png",
             "jpg",
+            "jpeg",
             "gif",
             "pdf",
             "bmp",
@@ -176,6 +177,18 @@ public class Log4j2Scanner implements IScannerCheck {
 
     @Override
     public List<IScanIssue> doPassiveScan(IHttpRequestResponse baseRequestResponse) {
+        Config.ScanMode scanMode = Config.ScanMode.valueOf(Config.get(Config.SCAN_MODE, Config.ScanMode.Passive.name()));
+        if (scanMode == Config.ScanMode.Passive)
+            return doScan(baseRequestResponse);
+        else return null;
+    }
+
+    @Override
+    public List<IScanIssue> doActiveScan(IHttpRequestResponse baseRequestResponse, IScannerInsertionPoint insertionPoint) {
+        return doScan(baseRequestResponse);
+    }
+
+    private List<IScanIssue> doScan(IHttpRequestResponse baseRequestResponse) {
         this.fuzzMode = Config.FuzzMode.valueOf(Config.get(Config.FUZZ_MODE, Config.FuzzMode.EachFuzz.name()));
         IRequestInfo req = this.parent.helpers.analyzeRequest(baseRequestResponse);
         List<IScanIssue> issues = new ArrayList<>();
@@ -523,10 +536,7 @@ public class Log4j2Scanner implements IScannerCheck {
         }
     }
 
-    @Override
-    public List<IScanIssue> doActiveScan(IHttpRequestResponse baseRequestResponse, IScannerInsertionPoint insertionPoint) {
-        return null;
-    }
+
 
     @Override
     public int consolidateDuplicateIssues(IScanIssue existingIssue, IScanIssue newIssue) {

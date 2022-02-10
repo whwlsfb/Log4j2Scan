@@ -5,6 +5,10 @@ public class Config {
         EachFuzz, Crazy
     }
 
+    public enum ScanMode {
+        Passive, Active
+    }
+
     public static final String CURRENT_BACKEND = "current_backend";
     public static final String CEYE_IDENTIFIER = "ceye_identifier";
     public static final String CEYE_TOKEN = "ceye_token";
@@ -15,6 +19,7 @@ public class Config {
     public static final String REVSUIT_DNS_DOMAIN = "revsuit_dns_domain";
     public static final String REVSUIT_DNS_TOKEN = "revsuit_dns_token";
     public static final String ENABLED_POC_IDS = "enabled_poc_ids";
+    public static final String GODNSLOG_ADMIN_URL = "godnslog_admin_url";
     public static final String GODNSLOG_IDENTIFIER = "godnslog_identifier";
     public static final String GODNSLOG_TOKEN = "godnslog_token";
     public static final String ENABLED_FUZZ_HEADER = "enabled_fuzz_header";
@@ -27,6 +32,7 @@ public class Config {
     public static final String ENABLED_FUZZ_BODY_MULTIPART = "enabled_fuzz_body_multipart";
     public static final String ENABLED_FUZZ_BAD_JSON = "enabled_fuzz_bad_json";
     public static final String FUZZ_MODE = "fuzz_mode";
+    public static final String SCAN_MODE = "scan_mode";
 
     public static String get(String name) {
         return Utils.Callback.loadExtensionSetting(name);

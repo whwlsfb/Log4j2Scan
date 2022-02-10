@@ -66,13 +66,21 @@ public class GoDnslog implements IBackend {
         return new String[0];
     }
 
+    public String getAdminUrl() {
+        String adminUrl = Config.get(Config.GODNSLOG_ADMIN_URL, null);
+        if (adminUrl == null && Config.get(Config.GODNSLOG_IDENTIFIER, null) != null) {
+            adminUrl = "http://" + Config.get(Config.GODNSLOG_IDENTIFIER);
+        }
+        return adminUrl;
+    }
+
     @Override
     public boolean CheckResult(String domain) {
         String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);
         String query = domain.toLowerCase().substring(0, domain.indexOf("."));
         String hash = getSign("q=" + query + "&t=" + timeStamp + "&blur=1");
         try {
-            Response resp = client.newCall(HttpUtils.GetDefaultRequest("http://" + rootDomain + "/data/dns?q=" + query + "&t=" + timeStamp + "&blur=1" + "&hash=" + hash).build()).execute();
+            Response resp = client.newCall(HttpUtils.GetDefaultRequest(getAdminUrl() + "/data/dns?q=" + query + "&t=" + timeStamp + "&blur=1" + "&hash=" + hash).build()).execute();
             JSONObject jObj = JSONObject.parseObject(resp.body().string().toLowerCase());
             if (jObj.containsKey("result")) {
                 return (((JSONArray) jObj.get("result")).size() > 0);

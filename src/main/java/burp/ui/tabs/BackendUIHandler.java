@@ -32,6 +32,7 @@ public class BackendUIHandler {
     private JTextField revSuitDNSDomain;
     private JTextField revSuitDNSToken;
 
+    private JTextField GoDnslogAdminURL;
     private JTextField GoDnslogIdentifierInput;
     private JTextField GoDnslogTokenInput;
     private Insets buttonMargin = new Insets(0, 3, 0, 3);
@@ -244,6 +245,12 @@ public class BackendUIHandler {
         panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
         panel1.setLayout(new BoxLayout(panel1, 1));
 
+        JPanel subPanel4 = UIUtil.GetXJPanel();
+        GoDnslogAdminURL = new JTextField(200);
+        GoDnslogAdminURL.setMaximumSize(revSuitDNSAdminURL.getPreferredSize());
+        subPanel4.add(new JLabel("Godnslog Admin URL: "));
+        subPanel4.add(GoDnslogAdminURL);
+
         JPanel subPanel1 = UIUtil.GetXJPanel();
         GoDnslogIdentifierInput = new JTextField(200);
         GoDnslogIdentifierInput.setMaximumSize(GoDnslogIdentifierInput.getPreferredSize());
@@ -278,6 +285,7 @@ public class BackendUIHandler {
         subPanel3.add(saveBtn);
         subPanel3.add(applyBtn);
 
+        panel1.add(subPanel4);
         panel1.add(subPanel1);
         panel1.add(subPanel2);
         panel1.add(subPanel3);
@@ -300,6 +308,15 @@ public class BackendUIHandler {
 
         GoDnslogIdentifierInput.setText(Config.get(Config.GODNSLOG_IDENTIFIER));
         GoDnslogTokenInput.setText(Config.get(Config.GODNSLOG_TOKEN));
+        GoDnslogAdminURL.setText(getAdminUrl());
+    }
+
+    public String getAdminUrl() {
+        String adminUrl = Config.get(Config.GODNSLOG_ADMIN_URL, null);
+        if (adminUrl == null && Config.get(Config.GODNSLOG_IDENTIFIER, null) != null) {
+            adminUrl = "http://" + Config.get(Config.GODNSLOG_IDENTIFIER);
+        }
+        return adminUrl;
     }
 
     private String[] GetBackends() {
