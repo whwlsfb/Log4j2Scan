@@ -22,7 +22,7 @@ jobs:
           java-version: 1.8
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-      - run: mkdir release && cp target/*-full.jar release
+      - run: mkdir release && cp target/Log4j2Scan-*.jar release
       - run: echo "NOW=$(date +'%Y%m%dT%H%M%S')" >> $GITHUB_ENV
       - name: Upload artifact
         uses: actions/upload-artifact@v1.0.0
