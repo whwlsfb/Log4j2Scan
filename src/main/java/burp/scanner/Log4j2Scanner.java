@@ -154,6 +154,9 @@ public class Log4j2Scanner implements IScannerCheck {
                 case BurpCollaborator:
                     this.backend = new BurpCollaborator();
                     break;
+                case DigPm:
+                    this.backend = new DigPm();
+                    break;
             }
             List<Integer> enabled_poc_ids_list = new ArrayList<>();
             enabled_poc_ids.forEach(e -> enabled_poc_ids_list.add((int) e));

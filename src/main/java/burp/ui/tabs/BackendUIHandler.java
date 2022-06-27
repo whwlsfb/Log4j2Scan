@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class BackendUIHandler {
     public enum Backends {
-        BurpCollaborator, DnslogCN, Ceye, RevSuitDNS, RevSuitRMI, GoDnslog
+        BurpCollaborator, DnslogCN, Ceye, RevSuitDNS, RevSuitRMI, GoDnslog, DigPm
     }
 
     private BurpExtender parent;
