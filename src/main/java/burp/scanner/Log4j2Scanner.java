@@ -99,7 +99,8 @@ public class Log4j2Scanner implements IScannerCheck {
             "docx",
             "ppt",
             "pptx",
-            "iso"
+            "iso",
+            "map"
     };
 
     private IPOC[] pocs;
@@ -538,7 +539,6 @@ public class Log4j2Scanner implements IScannerCheck {
                 return "unknown";
         }
     }
-
 
 
     @Override
