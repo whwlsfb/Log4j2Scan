@@ -2,6 +2,7 @@ package burp;
 
 import burp.scanner.Log4j2Scanner;
 import burp.ui.Log4j2ScanUIHandler;
+import burp.utils.Log4jMenuFactory;
 import burp.utils.Utils;
 
 import java.awt.*;
@@ -29,6 +30,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         callbacks.addSuiteTab(this.uiHandler);
         this.reloadScanner();
         callbacks.registerExtensionStateListener(this);
+        callbacks.registerContextMenuFactory(new Log4jMenuFactory(this));
     }
 
     public void reloadScanner() {
