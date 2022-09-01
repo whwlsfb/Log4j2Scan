@@ -16,6 +16,7 @@ public class FuzzUIHandler {
 
     private JComboBox fuzzModeSelector;
     private JComboBox scanModeSelector;
+    private JCheckBox enabled_ex_request;
     private JCheckBox enabled_fuzz_header;
     private JCheckBox enabled_fuzz_url;
     private JCheckBox enabled_fuzz_body;
@@ -63,6 +64,11 @@ public class FuzzUIHandler {
         scanModeSelector.setSelectedIndex(0);
         subPanel10.add(new JLabel("Scan Mode: "));
         subPanel10.add(scanModeSelector);
+
+
+        JPanel subPanel11 = UIUtil.GetXJPanel();
+        enabled_ex_request = new JCheckBox("Enable Ex-request");
+        subPanel11.add(enabled_ex_request);
 
         JPanel subPanel1 = UIUtil.GetXJPanel();
         enabled_fuzz_header = new JCheckBox("Enable Header Fuzz");
@@ -128,6 +134,7 @@ public class FuzzUIHandler {
 
         panel1.add(subPanel0);
         panel1.add(subPanel10);
+        panel1.add(subPanel11);
         panel1.add(subPanel1);
         panel1.add(subPanel2);
         panel1.add(subPanel3);
@@ -153,6 +160,7 @@ public class FuzzUIHandler {
         enabled_fuzz_body_multipart.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY_MULTIPART, true));
         enabled_fuzz_body_xml.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY_XML, true));
         enabled_fuzz_bad_json.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BAD_JSON, false));
+        enabled_ex_request.setSelected(Config.getBoolean(Config.ENABLE_EX_REQUEST, true));
     }
 
     private void saveConfig() {
@@ -167,6 +175,7 @@ public class FuzzUIHandler {
         Config.setBoolean(Config.ENABLED_FUZZ_BODY_MULTIPART, enabled_fuzz_body_multipart.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_BODY_XML, enabled_fuzz_body_xml.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_BAD_JSON, enabled_fuzz_bad_json.isSelected());
+        Config.setBoolean(Config.ENABLE_EX_REQUEST, enabled_ex_request.isSelected());
         JOptionPane.showMessageDialog(mainPanel, "Apply success!");
     }
 

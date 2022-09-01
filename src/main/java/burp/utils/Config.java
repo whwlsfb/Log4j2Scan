@@ -33,6 +33,7 @@ public class Config {
     public static final String ENABLED_FUZZ_BAD_JSON = "enabled_fuzz_bad_json";
     public static final String FUZZ_MODE = "fuzz_mode";
     public static final String SCAN_MODE = "scan_mode";
+    public static final String ENABLE_EX_REQUEST = "enabled_ex_request";
 
     public static String get(String name) {
         return Utils.Callback.loadExtensionSetting(name);

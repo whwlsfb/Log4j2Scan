@@ -319,15 +319,15 @@ public class Log4j2Scanner implements IScannerCheck {
                     domainParamMap.put(tmpDomain, param);
                 }
                 tmpRawRequest = helper.buildHttpMessage(helper.analyzeRequest(tmpRawRequest).getHeaders(), updateParams(rawBody, paramMap));
-                IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
                 for (Map.Entry<String, String> domainHeader : domainHeaderMap.entrySet()) {
-                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq));
+                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq, tmpRawRequest));
                 }
                 for (Map.Entry<String, IParameter> domainParam : domainParamMap.entrySet()) {
-                    domainMap.put(domainParam.getKey(), new ScanItem(domainParam.getValue(), tmpReq));
+                    domainMap.put(domainParam.getKey(), new ScanItem(domainParam.getValue(), tmpReq, tmpRawRequest));
                 }
             } catch (Exception ex) {
-                parent.stdout.println(ex);
+                ex.printStackTrace(parent.stderr);
             }
         }
 
@@ -361,8 +361,8 @@ public class Log4j2Scanner implements IScannerCheck {
                         header.Value = poc.generate(tmpDomain);
                         tmpHeaders.set(i, header.toString());
                         byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
-                        IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                        domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq));
+                        IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                        domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq, tmpRawRequest));
                     }
                 }
             }
@@ -375,14 +375,14 @@ public class Log4j2Scanner implements IScannerCheck {
                     domainHeaderMap.put(headerName, tmpDomain);
                 }
                 byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
-                IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
                 for (Map.Entry<String, String> domainHeader : domainHeaderMap.entrySet()) {
-                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq));
+                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq, tmpRawRequest));
                 }
             }
 
         } catch (Exception ex) {
-            parent.stdout.println(ex);
+            ex.printStackTrace(parent.stderr);
         }
         return domainMap;
     }
@@ -411,8 +411,8 @@ public class Log4j2Scanner implements IScannerCheck {
                         Utils.GetRandomNumber(100, Integer.MAX_VALUE));
                 IParameter fakeParam = helper.buildParameter("Bad-json Fuzz", exp, IParameter.PARAM_JSON);
                 byte[] newRequest = helper.buildHttpMessage(tmpHeaders, finalPaylad.getBytes(StandardCharsets.UTF_8));
-                IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), newRequest);
-                domainMap.put(tmpDomain, new ScanItem(fakeParam, tmpReq));
+                IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), newRequest);
+                domainMap.put(tmpDomain, new ScanItem(fakeParam, tmpReq, newRequest));
             }
         }
         return domainMap;
@@ -475,8 +475,8 @@ public class Log4j2Scanner implements IScannerCheck {
                         byte[] newBody = Utils.Replace(body, new int[]{param.getValueStart() - req.getBodyOffset(), param.getValueEnd() - req.getBodyOffset()}, exp.getBytes(StandardCharsets.UTF_8));
                         tmpRawRequest = helper.buildHttpMessage(req.getHeaders(), newBody);
                     }
-                    IHttpRequestResponse tmpReq = parent.callbacks.makeHttpRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                    domainMap.put(tmpDomain, new ScanItem(param, tmpReq));
+                    IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
+                    domainMap.put(tmpDomain, new ScanItem(param, tmpReq, tmpRawRequest));
                 } catch (Exception ex) {
                     parent.stdout.println(ex);
                 }
@@ -511,12 +511,28 @@ public class Log4j2Scanner implements IScannerCheck {
     }
 
     private Log4j2Issue getIssue(IHttpRequestResponse baseRequestResponse, IRequestInfo req, ScanItem item) {
+        List<IHttpRequestResponse> requestResponses = new ArrayList<>();
+        requestResponses.add(baseRequestResponse);
+        String desp = String.format("Vulnerable param is \"%s\" in %s.", item.IsHeader ? item.HeaderName : item.Param.getName(), item.IsHeader ? "Header" : getTypeName(item.Param.getType()));
+        if (item.TmpRequest != null) {
+            requestResponses.add(item.TmpRequest);
+        } else {
+            desp += "<br/><br/>RawRequest:<br/><br/><pre>" + new String(item.RawRequest) + "</pre>";
+        }
         return new Log4j2Issue(baseRequestResponse.getHttpService(),
                 req.getUrl(),
-                new IHttpRequestResponse[]{baseRequestResponse, item.TmpRequest},
+                requestResponses.toArray(new IHttpRequestResponse[0]),
                 "Log4j2 RCE Detected",
-                String.format("Vulnerable param is \"%s\" in %s.", item.IsHeader ? item.HeaderName : item.Param.getName(), item.IsHeader ? "Header" : getTypeName(item.Param.getType())),
+                desp,
                 "High");
+    }
+
+    private IHttpRequestResponse sendRequest(IHttpService httpService, byte[] rawRequest) {
+        if (Config.getBoolean(Config.ENABLE_EX_REQUEST, true)) {
+            HttpUtils.RawRequest(httpService, rawRequest, parent.helpers.analyzeRequest(httpService, rawRequest));
+            return null;
+        }
+        return parent.callbacks.makeHttpRequest(httpService, rawRequest);
     }
 
     private String getTypeName(int typeId) {
