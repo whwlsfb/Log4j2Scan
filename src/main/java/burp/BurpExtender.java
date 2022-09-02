@@ -14,7 +14,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     public IBurpExtenderCallbacks callbacks;
     public PrintWriter stdout;
     public PrintWriter stderr;
-    public String version = "0.11";
+    public String version = "0.12";
     public Log4j2ScanUIHandler uiHandler;
     public Log4j2Scanner scanner;
 
