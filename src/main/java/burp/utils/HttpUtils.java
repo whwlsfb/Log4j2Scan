@@ -4,6 +4,7 @@ import burp.BurpExtender;
 import burp.IHttpService;
 import burp.IRequestInfo;
 import okhttp3.*;
+import okhttp3.internal.http.HttpMethod;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -33,18 +34,24 @@ public class HttpUtils {
     public static void RawRequest(IHttpService httpService, byte[] rawRequest, IRequestInfo req) {
         byte[] body = Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length);
         List<String> headers = req.getHeaders();
-        new PrintStream(Utils.Callback.getStderr()).println(req.getUrl());
         Request.Builder requestBuilder = new Request.Builder()
                 .url(req.getUrl());
         for (int i = 1; i < headers.size(); i++) {
             HttpHeader header = new HttpHeader(headers.get(i));
             requestBuilder.header(header.Name, header.Value);
         }
-        requestBuilder.method(req.getMethod(), RequestBody.create(body));
+        if(HttpMethod.permitsRequestBody(req.getMethod())) {
+            requestBuilder.method(req.getMethod(), RequestBody.create(body));
+        } else {
+            requestBuilder.method(req.getMethod(), null);
+        }
         requestBuilder.cacheControl(NoCache);
         try {
             client.newCall(requestBuilder.build()).execute();
         } catch (Exception ex) {
+            if (ex.getMessage().contains("timout")) {
+                return;
+            }
             ex.printStackTrace(new PrintStream(Utils.Callback.getStderr()));
         }
     }
