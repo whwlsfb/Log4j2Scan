@@ -10,7 +10,8 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class HttpUtils {
     public static CacheControl NoCache = new CacheControl.Builder().noCache().noStore().build();
@@ -31,7 +32,24 @@ public class HttpUtils {
         return (pureUrl.lastIndexOf(".") > -1 ? pureUrl.substring(pureUrl.lastIndexOf(".") + 1) : "").toLowerCase();
     }
 
+    private static ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 1000, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    private static final ReentrantLock mainLock = new ReentrantLock();
+
     public static void RawRequest(IHttpService httpService, byte[] rawRequest, IRequestInfo req) {
+        mainLock.lock();
+        executor.submit(() -> _rawRequest(httpService, rawRequest, req));
+        mainLock.unlock();
+    }
+
+    public static void waitForRequestFinish(int requestCount) throws InterruptedException {
+        mainLock.lock();
+        executor.shutdown();
+        executor.awaitTermination(requestCount * 500L, TimeUnit.MILLISECONDS);
+        resetTaskPool();
+        mainLock.unlock();
+    }
+
+    public static void _rawRequest(IHttpService httpService, byte[] rawRequest, IRequestInfo req) {
         byte[] body = Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length);
         List<String> headers = req.getHeaders();
         Request.Builder requestBuilder = new Request.Builder()
@@ -40,7 +58,7 @@ public class HttpUtils {
             HttpHeader header = new HttpHeader(headers.get(i));
             requestBuilder.header(header.Name, header.Value);
         }
-        if(HttpMethod.permitsRequestBody(req.getMethod())) {
+        if (HttpMethod.permitsRequestBody(req.getMethod())) {
             requestBuilder.method(req.getMethod(), RequestBody.create(body));
         } else {
             requestBuilder.method(req.getMethod(), null);
@@ -49,10 +67,13 @@ public class HttpUtils {
         try {
             client.newCall(requestBuilder.build()).execute();
         } catch (Exception ex) {
-            if (ex.getMessage().contains("timout")) {
+            if (ex.getMessage().contains("timeout")) {
                 return;
             }
-            ex.printStackTrace(new PrintStream(Utils.Callback.getStderr()));
+            (new PrintStream(Utils.Callback.getStderr())).println(ex.getMessage());
         }
+    }
+    public static void resetTaskPool() {
+        executor = new ThreadPoolExecutor(10, 1000, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     }
 }

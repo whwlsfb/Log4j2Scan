@@ -4,10 +4,13 @@ package burp.utils;
 import burp.IBurpExtenderCallbacks;
 import burp.poc.IPOC;
 
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -123,5 +126,13 @@ public class Utils {
             result[i] = String.valueOf(str.charAt(i));
         }
         return result;
+    }
+    public static void StdErrPrintln(String str) {
+        String dateStr = new SimpleDateFormat("[HH:mm:ss]").format(new Date());
+        new PrintStream(Utils.Callback.getStderr()).println(dateStr + "\t" + str);
+    }
+    public static void StdoutPrintln(String str) {
+        String dateStr = new SimpleDateFormat("[HH:mm:ss]").format(new Date());
+        new PrintStream(Utils.Callback.getStdout()).println(dateStr + "\t" + str);
     }
 }

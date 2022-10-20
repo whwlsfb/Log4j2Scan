@@ -9,9 +9,11 @@ import burp.ui.tabs.BackendUIHandler;
 import burp.utils.*;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import net.jodah.expiringmap.ExpiringMap;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -107,14 +109,56 @@ public class Log4j2Scanner implements IScannerCheck {
 
     private Config.FuzzMode fuzzMode;
 
+    Map<String, ScanItem> cacheScanMap = ExpiringMap.builder()
+            .expiration(5, TimeUnit.MINUTES)
+            .build();
+
+
+    Timer cacheCheckTimer = new Timer();
+
     public Log4j2Scanner(final BurpExtender newParent) {
         this.parent = newParent;
         this.helper = newParent.helpers;
         this.loadConfig();
         if (this.backend.getState()) {
             parent.stdout.println("Log4j2Scan loaded successfully!\r\n");
+            startCacheChecker();
         } else {
             parent.stdout.println("Backend init failed!\r\n");
+            cacheCheckTimer.cancel();
+        }
+    }
+
+    private void startCacheChecker() {
+        cacheCheckTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                cacheChecker();
+            }
+        }, 0, 30 * 1000); //30s
+    }
+
+    public void cacheChecker() {
+        if (cacheScanMap.size() == 0) return;
+        Utils.StdoutPrintln("Has missing match scan point: " + cacheScanMap.size() + ",recheck DNSLog result..");
+        int found = 0;
+        if (backend.flushCache(cacheScanMap.size())) {
+            Map.Entry[] tmpMap = cacheScanMap.entrySet().toArray(new Map.Entry[0]);
+            for (Map.Entry<String, ScanItem> domainItem :
+                    tmpMap) {
+                ScanItem item = domainItem.getValue();
+                boolean hasIssue = backend.CheckResult(domainItem.getKey());
+                if (hasIssue) {
+                    parent.callbacks.addScanIssue(getIssue(item.BaseRequest, item.RequestInfo, item));
+                    cacheScanMap.remove(domainItem.getKey());
+                    found++;
+                }
+            }
+            if (found > 0) {
+                Utils.StdoutPrintln("found issue: " + found);
+            }
+        } else {
+            parent.stdout.println("get backend result failed!\r\n");
         }
     }
 
@@ -122,6 +166,7 @@ public class Log4j2Scanner implements IScannerCheck {
         if (this.backend != null) {
             this.backend.close();
         }
+        cacheCheckTimer.cancel();
     }
 
     public boolean getState() {
@@ -197,7 +242,7 @@ public class Log4j2Scanner implements IScannerCheck {
         IRequestInfo req = this.parent.helpers.analyzeRequest(baseRequestResponse);
         List<IScanIssue> issues = new ArrayList<>();
         if (!isStaticFile(req.getUrl().toString())) {
-            parent.stdout.println(String.format("Scanning: %s", req.getUrl()));
+            Utils.StdoutPrintln(String.format("Scanning: %s", req.getUrl()));
             Map<String, ScanItem> domainMap = new HashMap<>();
             if (this.fuzzMode == Config.FuzzMode.EachFuzz) {
                 domainMap.putAll(paramsFuzz(baseRequestResponse, req));
@@ -215,8 +260,12 @@ public class Log4j2Scanner implements IScannerCheck {
             } catch (InterruptedException e) {
                 parent.stdout.println(e);
             }
-            issues.addAll(finalCheck(baseRequestResponse, req, domainMap));
-            parent.stdout.println("Scan complete: " + req.getUrl() + " - " + (issues.size() > 0 ? String.format("found %d issue.", issues.size()) : "No issue found."));
+            try {
+                issues.addAll(finalCheck(baseRequestResponse, req, domainMap));
+            } catch (InterruptedException e) {
+                parent.stdout.println(e);
+            }
+            Utils.StdoutPrintln("Scan complete: " + req.getUrl() + " - " + (issues.size() > 0 ? String.format("found %d issue.", issues.size()) : "No issue found."));
         }
         return issues;
     }
@@ -321,10 +370,10 @@ public class Log4j2Scanner implements IScannerCheck {
                 tmpRawRequest = helper.buildHttpMessage(helper.analyzeRequest(tmpRawRequest).getHeaders(), updateParams(rawBody, paramMap));
                 IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
                 for (Map.Entry<String, String> domainHeader : domainHeaderMap.entrySet()) {
-                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq, tmpRawRequest));
+                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq, baseRequestResponse, tmpRawRequest));
                 }
                 for (Map.Entry<String, IParameter> domainParam : domainParamMap.entrySet()) {
-                    domainMap.put(domainParam.getKey(), new ScanItem(domainParam.getValue(), tmpReq, tmpRawRequest));
+                    domainMap.put(domainParam.getKey(), new ScanItem(domainParam.getValue(), tmpReq, baseRequestResponse, tmpRawRequest));
                 }
             } catch (Exception ex) {
                 ex.printStackTrace(parent.stderr);
@@ -362,7 +411,7 @@ public class Log4j2Scanner implements IScannerCheck {
                         tmpHeaders.set(i, header.toString());
                         byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
                         IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                        domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq, tmpRawRequest));
+                        domainMap.put(tmpDomain, new ScanItem(header.Name, tmpReq, baseRequestResponse, tmpRawRequest));
                     }
                 }
             }
@@ -377,7 +426,7 @@ public class Log4j2Scanner implements IScannerCheck {
                 byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
                 IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
                 for (Map.Entry<String, String> domainHeader : domainHeaderMap.entrySet()) {
-                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq, tmpRawRequest));
+                    domainMap.put(domainHeader.getValue(), new ScanItem(domainHeader.getKey(), tmpReq, baseRequestResponse, tmpRawRequest));
                 }
             }
 
@@ -412,7 +461,7 @@ public class Log4j2Scanner implements IScannerCheck {
                 IParameter fakeParam = helper.buildParameter("Bad-json Fuzz", exp, IParameter.PARAM_JSON);
                 byte[] newRequest = helper.buildHttpMessage(tmpHeaders, finalPaylad.getBytes(StandardCharsets.UTF_8));
                 IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), newRequest);
-                domainMap.put(tmpDomain, new ScanItem(fakeParam, tmpReq, newRequest));
+                domainMap.put(tmpDomain, new ScanItem(fakeParam, tmpReq, baseRequestResponse, newRequest));
             }
         }
         return domainMap;
@@ -476,7 +525,7 @@ public class Log4j2Scanner implements IScannerCheck {
                         tmpRawRequest = helper.buildHttpMessage(req.getHeaders(), newBody);
                     }
                     IHttpRequestResponse tmpReq = sendRequest(baseRequestResponse.getHttpService(), tmpRawRequest);
-                    domainMap.put(tmpDomain, new ScanItem(param, tmpReq, tmpRawRequest));
+                    domainMap.put(tmpDomain, new ScanItem(param, tmpReq, baseRequestResponse, tmpRawRequest));
                 } catch (Exception ex) {
                     parent.stdout.println(ex);
                 }
@@ -485,8 +534,9 @@ public class Log4j2Scanner implements IScannerCheck {
         return domainMap;
     }
 
-    private List<IScanIssue> finalCheck(IHttpRequestResponse baseRequestResponse, IRequestInfo req, Map<String, ScanItem> domainMap) {
+    private List<IScanIssue> finalCheck(IHttpRequestResponse baseRequestResponse, IRequestInfo req, Map<String, ScanItem> domainMap) throws InterruptedException {
         List<IScanIssue> issues = new ArrayList<>();
+        HttpUtils.waitForRequestFinish(domainMap.size());
         if (backend.supportBatchCheck()) {
             String[] vulPoint = backend.batchCheck(domainMap.keySet().toArray(new String[0]));
             for (String domain : vulPoint) {
@@ -501,6 +551,9 @@ public class Log4j2Scanner implements IScannerCheck {
                     boolean hasIssue = backend.CheckResult(domainItem.getKey());
                     if (hasIssue) {
                         issues.add(getIssue(baseRequestResponse, req, item));
+                    } else {
+                        item.RequestInfo = req;
+                        cacheScanMap.put(domainItem.getKey(), item);
                     }
                 }
             } else {
