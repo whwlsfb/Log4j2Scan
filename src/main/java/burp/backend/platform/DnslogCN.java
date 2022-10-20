@@ -31,6 +31,7 @@ public class DnslogCN implements IBackend {
     String platformUrl = "http://www.dnslog.cn/";
     String rootDomain = "";
     String dnsLogResultCache = "";
+    Timer timer = new Timer();
 
     public DnslogCN() {
         this.initDomain();
@@ -42,6 +43,7 @@ public class DnslogCN implements IBackend {
             Response resp = client.newCall(GetDefaultRequest(platformUrl + "/getdomain.php?t=0." + Math.abs(Utils.getRandomLong())).build()).execute();
             rootDomain = resp.body().string();
             Utils.Callback.printOutput(String.format("Domain: %s", rootDomain));
+            startSessionHeartbeat();
         } catch (Exception ex) {
             Utils.Callback.printError("initDomain failed: " + ex.getMessage());
         }
@@ -52,10 +54,18 @@ public class DnslogCN implements IBackend {
         return false;
     }
 
+    private void startSessionHeartbeat() {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                flushCache();
+            }
+        }, 0, 2 * 60 * 1000); //2min
+    }
 
     @Override
     public void close() {
-
+        timer.cancel();
     }
 
     @Override
