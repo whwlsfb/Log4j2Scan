@@ -1,10 +1,9 @@
 package burp.utils;
 
-import burp.BurpExtender;
-import burp.IHttpService;
-import burp.IRequestInfo;
+import burp.*;
 import okhttp3.*;
 import okhttp3.internal.http.HttpMethod;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -32,7 +31,7 @@ public class HttpUtils {
         return (pureUrl.lastIndexOf(".") > -1 ? pureUrl.substring(pureUrl.lastIndexOf(".") + 1) : "").toLowerCase();
     }
 
-    private static ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 1000, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    private static ThreadPoolExecutor executor;
     private static final ReentrantLock mainLock = new ReentrantLock();
 
     public static void RawRequest(IHttpService httpService, byte[] rawRequest, IRequestInfo req) {
@@ -49,7 +48,7 @@ public class HttpUtils {
         mainLock.unlock();
     }
 
-    public static void _rawRequest(IHttpService httpService, byte[] rawRequest, IRequestInfo req) {
+    private static void _rawRequest(IHttpService httpService, byte[] rawRequest, IRequestInfo req) {
         byte[] body = Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length);
         List<String> headers = req.getHeaders();
         Request.Builder requestBuilder = new Request.Builder()
@@ -74,6 +73,10 @@ public class HttpUtils {
         }
     }
     public static void resetTaskPool() {
-        executor = new ThreadPoolExecutor(10, 1000, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        executor = new ThreadPoolExecutor(10, 10, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    }
+
+    static {
+        resetTaskPool();
     }
 }
