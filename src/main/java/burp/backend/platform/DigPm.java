@@ -25,6 +25,7 @@ public class DigPm implements IBackend {
     String rootDomain = "";
     String userDomain = "";
     String token = "";
+    String cache = "";
 
     public DigPm() {
         this.initDomain();
@@ -72,13 +73,7 @@ public class DigPm implements IBackend {
     @Override
     public boolean CheckResult(String domain) {
         try {
-            Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "get_results").
-                    post(new FormBody.Builder().
-                            add("domain", rootDomain).
-                            add("token", token)
-                            .build()).build()).execute();
-            String result = resp.body().string().toLowerCase();
-            return result.contains(domain);
+            return cache.contains(domain);
         } catch (Exception ex) {
             System.out.println(ex);
             return false;
@@ -92,7 +87,18 @@ public class DigPm implements IBackend {
 
     @Override
     public boolean flushCache() {
-        return true;
+        try {
+            Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "get_results").
+                    post(new FormBody.Builder().
+                            add("domain", rootDomain).
+                            add("token", token)
+                            .build()).build()).execute();
+            cache = resp.body().string().toLowerCase();
+            return true;
+        } catch (Exception ex) {
+            System.out.println(ex);
+            return false;
+        }
     }
 
     @Override
