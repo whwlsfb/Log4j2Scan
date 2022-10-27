@@ -42,7 +42,7 @@ $ mvn package
 
 ## 使用
 
-该插件安装完成后，建议根据需要修改插件设置，插件设置位于BurpSuite的BurpSuite选项卡，本插件默认使用BurpSuite内嵌的后端平台`BurpCollaborator`，建议切换至`DnslogCN`或`DigPm`，扫描发现的漏洞将会生成漏洞条目出现在BurpSuite首页的`Issue activity`中。
+该插件安装完成后，建议根据需要修改插件设置，插件设置位于BurpSuite的Log4j2Scan选项卡，本插件默认使用BurpSuite内嵌的后端平台`BurpCollaborator`，建议切换至`DnslogCN`或`DigPm`，扫描发现的漏洞将会生成漏洞条目出现在BurpSuite首页的`Issue activity`中。
 
 本插件具有如下设置项：
 ### Backend
