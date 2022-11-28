@@ -197,6 +197,9 @@ public class Log4j2Scanner implements IScannerCheck {
                 case GoDnslog:
                     this.backend = new GoDnslog();
                     break;
+                case SelfDigPm:
+                    this.backend = new SelfDigPm();
+                    break;
                 case BurpCollaborator:
                     this.backend = new BurpCollaborator();
                     break;

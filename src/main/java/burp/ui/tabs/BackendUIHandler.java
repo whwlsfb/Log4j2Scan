@@ -3,6 +3,7 @@ package burp.ui.tabs;
 import burp.BurpExtender;
 import burp.utils.Config;
 import burp.utils.UIUtil;
+import burp.utils.Utils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 
 public class BackendUIHandler {
     public enum Backends {
-        BurpCollaborator, DnslogCN, Ceye, RevSuitDNS, RevSuitRMI, GoDnslog, DigPm
+        BurpCollaborator, DnslogCN, Ceye, RevSuitDNS, RevSuitRMI, GoDnslog,SelfDigPm, DigPm
     }
 
     private BurpExtender parent;
@@ -35,6 +36,11 @@ public class BackendUIHandler {
     private JTextField GoDnslogAdminURL;
     private JTextField GoDnslogIdentifierInput;
     private JTextField GoDnslogTokenInput;
+
+    private JTextField SelfDigPmAdminURL;
+    private JTextField SelfDigPmTokenInput;
+    private JTextField SelfDigPmToken2Input;
+
     private Insets buttonMargin = new Insets(0, 3, 0, 3);
 
 
@@ -69,6 +75,7 @@ public class BackendUIHandler {
         backendsPanel.addTab("RevSuitRMI", getRevSuitRMIPanel());
         backendsPanel.addTab("RevSuitDNS", getRevSuitDNSPanel());
         backendsPanel.addTab("GoDnslog", getGodnslogPanel());
+        backendsPanel.addTab("SelfDigPm", getSelfDigPmPanel());
         panel2.add(backendsPanel);
 
         mainPanel.add(panel1);
@@ -247,7 +254,7 @@ public class BackendUIHandler {
 
         JPanel subPanel4 = UIUtil.GetXJPanel();
         GoDnslogAdminURL = new JTextField(200);
-        GoDnslogAdminURL.setMaximumSize(revSuitDNSAdminURL.getPreferredSize());
+        GoDnslogAdminURL.setMaximumSize(GoDnslogAdminURL.getPreferredSize());
         subPanel4.add(new JLabel("Godnslog Admin URL: "));
         subPanel4.add(GoDnslogAdminURL);
 
@@ -292,6 +299,52 @@ public class BackendUIHandler {
         return panel1;
     }
 
+    private JPanel getSelfDigPmPanel() {
+        JPanel panel1 = new JPanel();
+        panel1.setAlignmentX(0.0f);
+        panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
+        panel1.setLayout(new BoxLayout(panel1, 1));
+
+        JPanel subPanel4 = UIUtil.GetXJPanel();
+        SelfDigPmAdminURL = new JTextField(200);
+        SelfDigPmAdminURL.setMaximumSize(SelfDigPmAdminURL.getPreferredSize());
+        subPanel4.add(new JLabel("SelfDigPm URL: "));
+        subPanel4.add(SelfDigPmAdminURL);
+
+        JPanel subPanel2 = UIUtil.GetXJPanel();
+        SelfDigPmTokenInput = new JTextField(200);
+        SelfDigPmTokenInput.setMaximumSize(SelfDigPmTokenInput.getPreferredSize());
+        subPanel2.add(new JLabel("Basic Token: "));
+        subPanel2.add(SelfDigPmTokenInput);
+
+        JPanel subPanel3 = UIUtil.GetXJPanel();
+        JButton saveBtn = new JButton("Save");
+        saveBtn.setMaximumSize(saveBtn.getPreferredSize());
+        saveBtn.addActionListener(e -> {
+            Config.set(Config.SelfDigPm_ADMIN_URL, SelfDigPmAdminURL.getText());
+            Config.set(Config.SelfDigPm_TOKEN, SelfDigPmTokenInput.getText());
+            JOptionPane.showMessageDialog(mainPanel, "Save success!");
+        });
+        JButton applyBtn = new JButton("Save&Apply");
+        applyBtn.setMaximumSize(applyBtn.getPreferredSize());
+        applyBtn.addActionListener(e -> {
+            saveBtn.doClick();
+            Config.set(Config.CURRENT_BACKEND, Backends.SelfDigPm.name());
+            this.loadConfig();
+            this.apply();
+        });
+        saveBtn.setMargin(buttonMargin);
+        applyBtn.setMargin(buttonMargin);
+        subPanel3.add(saveBtn);
+        subPanel3.add(applyBtn);
+
+        panel1.add(subPanel4);
+        panel1.add(subPanel2);
+        panel1.add(subPanel3);
+        return panel1;
+    }
+
+
     private void loadConfig() {
         backendSelector.setSelectedItem(Config.get(Config.CURRENT_BACKEND, Backends.BurpCollaborator.name()));
 
@@ -309,6 +362,10 @@ public class BackendUIHandler {
         GoDnslogIdentifierInput.setText(Config.get(Config.GODNSLOG_IDENTIFIER));
         GoDnslogTokenInput.setText(Config.get(Config.GODNSLOG_TOKEN));
         GoDnslogAdminURL.setText(getAdminUrl());
+
+        SelfDigPmTokenInput.setText(Config.get(Config.SelfDigPm_TOKEN));
+        SelfDigPmAdminURL.setText(Config.get(Config.SelfDigPm_ADMIN_URL));
+
     }
 
     public String getAdminUrl() {
