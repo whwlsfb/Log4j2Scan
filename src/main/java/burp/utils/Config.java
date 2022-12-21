@@ -1,6 +1,7 @@
 package burp.utils;
 
 public class Config {
+
     public enum FuzzMode {
         EachFuzz, Crazy
     }
@@ -22,6 +23,8 @@ public class Config {
     public static final String GODNSLOG_ADMIN_URL = "godnslog_admin_url";
     public static final String GODNSLOG_IDENTIFIER = "godnslog_identifier";
     public static final String GODNSLOG_TOKEN = "godnslog_token";
+    public static final String SelfDigPm_ADMIN_URL = "DIGPM_admin_url";
+    public static final String SelfDigPm_TOKEN = "DIGPM_token";
     public static final String ENABLED_FUZZ_HEADER = "enabled_fuzz_header";
     public static final String ENABLED_FUZZ_URL = "enabled_fuzz_url";
     public static final String ENABLED_FUZZ_BODY = "enabled_fuzz_body";
