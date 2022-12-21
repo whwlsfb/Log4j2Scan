@@ -5,17 +5,11 @@ import burp.poc.IPOC;
 import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.sun.net.httpserver.BasicAuthenticator;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
-import java.math.BigInteger;
-import java.net.http.HttpRequest;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import static burp.utils.HttpUtils.GetDefaultRequest;
