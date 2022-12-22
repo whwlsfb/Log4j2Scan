@@ -252,6 +252,9 @@ public class Log4j2Scanner implements IScannerCheck {
                 if (Config.getBoolean(Config.ENABLED_FUZZ_HEADER, true)) {
                     domainMap.putAll(headerFuzz(baseRequestResponse, req));
                 }
+                if (Config.getBoolean(Config.ADD_FUZZ_HEADER, true)) {
+                    domainMap.putAll(headerAdd(baseRequestResponse, req));
+                }
             } else {
                 domainMap.putAll(crazyFuzz(baseRequestResponse, req));
             }
@@ -418,6 +421,18 @@ public class Log4j2Scanner implements IScannerCheck {
                     }
                 }
             }
+        } catch (Exception ex) {
+            ex.printStackTrace(parent.stderr);
+        }
+        return domainMap;
+    }
+
+    private Map<String, ScanItem> headerAdd (IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        List<String> headers = req.getHeaders();
+        Map<String, ScanItem> domainMap = new HashMap<>();
+        try {
+            byte[] rawRequest = baseRequestResponse.getRequest();
+            List<String> guessHeaders = new ArrayList(Arrays.asList(HEADER_GUESS));
             for (IPOC poc : getSupportedPOCs()) {
                 List<String> tmpHeaders = new ArrayList<>(headers);
                 Map<String, String> domainHeaderMap = new HashMap<>();
