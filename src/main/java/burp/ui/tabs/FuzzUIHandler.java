@@ -18,6 +18,7 @@ public class FuzzUIHandler {
     private JComboBox scanModeSelector;
     private JCheckBox enabled_ex_request;
     private JCheckBox enabled_fuzz_header;
+    private JCheckBox add_fuzz_header;
     private JCheckBox enabled_fuzz_url;
     private JCheckBox enabled_fuzz_body;
     private JCheckBox enabled_fuzz_cookie;
@@ -71,8 +72,12 @@ public class FuzzUIHandler {
         subPanel11.add(enabled_ex_request);
 
         JPanel subPanel1 = UIUtil.GetXJPanel();
-        enabled_fuzz_header = new JCheckBox("Enable Header Fuzz");
+        enabled_fuzz_header = new JCheckBox("Replace Header Fuzz");
         subPanel1.add(enabled_fuzz_header);
+
+        JPanel subPanel12 = UIUtil.GetXJPanel();
+        add_fuzz_header = new JCheckBox("Add Header Fuzz");
+        subPanel12.add(add_fuzz_header);
 
         JPanel subPanel2 = UIUtil.GetXJPanel();
         enabled_fuzz_url = new JCheckBox("Enable Url Fuzz");
@@ -136,6 +141,7 @@ public class FuzzUIHandler {
         panel1.add(subPanel10);
         panel1.add(subPanel11);
         panel1.add(subPanel1);
+        panel1.add(subPanel12);
         panel1.add(subPanel2);
         panel1.add(subPanel3);
         panel1.add(subPanel4);
@@ -152,6 +158,7 @@ public class FuzzUIHandler {
         fuzzModeSelector.setSelectedItem(Config.get(Config.FUZZ_MODE, Config.FuzzMode.EachFuzz.name()));
         scanModeSelector.setSelectedItem(Config.get(Config.SCAN_MODE, Config.ScanMode.Passive.name()));
         enabled_fuzz_header.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_HEADER, true));
+        add_fuzz_header.setSelected(Config.getBoolean(Config.ADD_FUZZ_HEADER, true));
         enabled_fuzz_url.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_URL, true));
         enabled_fuzz_body.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_BODY, true));
         enabled_fuzz_cookie.setSelected(Config.getBoolean(Config.ENABLED_FUZZ_COOKIE, true));
@@ -167,6 +174,7 @@ public class FuzzUIHandler {
         Config.set(Config.FUZZ_MODE, fuzzModeSelector.getSelectedItem().toString());
         Config.set(Config.SCAN_MODE, scanModeSelector.getSelectedItem().toString());
         Config.setBoolean(Config.ENABLED_FUZZ_HEADER, enabled_fuzz_header.isSelected());
+        Config.setBoolean(Config.ADD_FUZZ_HEADER, add_fuzz_header.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_URL, enabled_fuzz_url.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_BODY, enabled_fuzz_body.isSelected());
         Config.setBoolean(Config.ENABLED_FUZZ_COOKIE, enabled_fuzz_cookie.isSelected());
