@@ -5,7 +5,9 @@ import okhttp3.*;
 import okhttp3.internal.http.HttpMethod;
 import org.jetbrains.annotations.NotNull;
 
+import javax.net.ssl.*;
 import java.io.PrintStream;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -14,9 +16,52 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class HttpUtils {
     public static CacheControl NoCache = new CacheControl.Builder().noCache().noStore().build();
-    static OkHttpClient client = new OkHttpClient().newBuilder().
+    static OkHttpClient client = configureToIgnoreCertificate(new OkHttpClient().newBuilder().
+            hostnameVerifier((hostname, session) -> true).
             connectTimeout(3000, TimeUnit.MILLISECONDS).
-            callTimeout(500, TimeUnit.MILLISECONDS).build();
+            callTimeout(500, TimeUnit.MILLISECONDS)).
+            build();
+
+    private static OkHttpClient.Builder configureToIgnoreCertificate(OkHttpClient.Builder builder) {
+        try {
+
+            // Create a trust manager that does not validate certificate chains
+            final TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
+                                throws CertificateException {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
+                                throws CertificateException {
+                        }
+
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
+            builder.hostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+        }
+        return builder;
+    }
 
     public static Request.Builder GetDefaultRequest(String url) {
         int fakeFirefoxVersion = Utils.GetRandomNumber(45, 94 + Calendar.getInstance().get(Calendar.YEAR) - 2021);
@@ -72,6 +117,7 @@ public class HttpUtils {
             (new PrintStream(Utils.Callback.getStderr())).println(ex.getMessage());
         }
     }
+
     public static void resetTaskPool() {
         executor = new ThreadPoolExecutor(10, 10, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     }
