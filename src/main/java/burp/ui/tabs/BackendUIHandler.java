@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 public class BackendUIHandler {
     public enum Backends {
-        BurpCollaborator, DnslogCN, Ceye, RevSuitDNS, RevSuitRMI, GoDnslog,SelfDigPm, DigPm
+        BurpCollaborator, DnslogCN, Ceye, RevSuitDNS, RevSuitRMI, GoDnslog,SelfDigPm, DigPm, Eyes
     }
 
     private BurpExtender parent;
@@ -40,6 +40,10 @@ public class BackendUIHandler {
     private JTextField SelfDigPmAdminURL;
     private JTextField SelfDigPmTokenInput;
     private JTextField SelfDigPmToken2Input;
+
+    private JTextField EyesIdentifierInput;
+
+    private JTextField EyesTokenInput;
 
     private Insets buttonMargin = new Insets(0, 3, 0, 3);
 
@@ -76,6 +80,7 @@ public class BackendUIHandler {
         backendsPanel.addTab("RevSuitDNS", getRevSuitDNSPanel());
         backendsPanel.addTab("GoDnslog", getGodnslogPanel());
         backendsPanel.addTab("SelfDigPm", getSelfDigPmPanel());
+        backendsPanel.addTab("Eyes.sh", getEyesPanel());
         panel2.add(backendsPanel);
 
         mainPanel.add(panel1);
@@ -344,6 +349,51 @@ public class BackendUIHandler {
         return panel1;
     }
 
+    private JPanel getEyesPanel() {
+        JPanel panel1 = new JPanel();
+        panel1.setAlignmentX(0.0f);
+        panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
+        panel1.setLayout(new BoxLayout(panel1, 1));
+
+        JPanel subPanel4 = UIUtil.GetXJPanel();
+        EyesIdentifierInput = new JTextField(200);
+        EyesIdentifierInput.setMaximumSize(EyesIdentifierInput.getPreferredSize());
+        subPanel4.add(new JLabel("Eyes Identifier: "));
+        subPanel4.add(EyesIdentifierInput);
+
+        JPanel subPanel2 = UIUtil.GetXJPanel();
+        EyesTokenInput = new JTextField(200);
+        EyesTokenInput.setMaximumSize(EyesTokenInput.getPreferredSize());
+        subPanel2.add(new JLabel("Eyes Token: "));
+        subPanel2.add(EyesTokenInput);
+
+        JPanel subPanel3 = UIUtil.GetXJPanel();
+        JButton saveBtn = new JButton("Save");
+        saveBtn.setMaximumSize(saveBtn.getPreferredSize());
+        saveBtn.addActionListener(e -> {
+            Config.set(Config.Eyes_IDENTIFIER, EyesIdentifierInput.getText());
+            Config.set(Config.Eyes_TOKEN, EyesTokenInput.getText());
+            JOptionPane.showMessageDialog(mainPanel, "Save success!");
+        });
+        JButton applyBtn = new JButton("Save&Apply");
+        applyBtn.setMaximumSize(applyBtn.getPreferredSize());
+        applyBtn.addActionListener(e -> {
+            saveBtn.doClick();
+            Config.set(Config.CURRENT_BACKEND, Backends.Eyes.name());
+            this.loadConfig();
+            this.apply();
+        });
+        saveBtn.setMargin(buttonMargin);
+        applyBtn.setMargin(buttonMargin);
+        subPanel3.add(saveBtn);
+        subPanel3.add(applyBtn);
+
+        panel1.add(subPanel4);
+        panel1.add(subPanel2);
+        panel1.add(subPanel3);
+        return panel1;
+    }
+
 
     private void loadConfig() {
         backendSelector.setSelectedItem(Config.get(Config.CURRENT_BACKEND, Backends.BurpCollaborator.name()));
@@ -365,6 +415,9 @@ public class BackendUIHandler {
 
         SelfDigPmTokenInput.setText(Config.get(Config.SelfDigPm_TOKEN));
         SelfDigPmAdminURL.setText(Config.get(Config.SelfDigPm_ADMIN_URL));
+
+        EyesIdentifierInput.setText(Config.get(Config.Eyes_IDENTIFIER));
+        EyesTokenInput.setText(Config.get(Config.Eyes_TOKEN));
 
     }
 

@@ -25,6 +25,8 @@ public class Config {
     public static final String GODNSLOG_TOKEN = "godnslog_token";
     public static final String SelfDigPm_ADMIN_URL = "DIGPM_admin_url";
     public static final String SelfDigPm_TOKEN = "DIGPM_token";
+    public static final String Eyes_IDENTIFIER = "Eyes_identifier";
+    public static final String Eyes_TOKEN = "Eyes_token";
     public static final String ENABLED_FUZZ_HEADER = "enabled_fuzz_header";
     public static final String ADD_FUZZ_HEADER = "add_fuzz_header";
     public static final String ENABLED_FUZZ_URL = "enabled_fuzz_url";

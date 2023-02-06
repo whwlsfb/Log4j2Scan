@@ -206,6 +206,8 @@ public class Log4j2Scanner implements IScannerCheck {
                 case DigPm:
                     this.backend = new DigPm();
                     break;
+                case Eyes:
+                    this.backend = new Eyes();
             }
             List<Integer> enabled_poc_ids_list = new ArrayList<>();
             enabled_poc_ids.forEach(e -> enabled_poc_ids_list.add((int) e));
