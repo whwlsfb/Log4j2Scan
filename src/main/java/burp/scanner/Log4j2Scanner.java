@@ -37,7 +37,7 @@ public class Log4j2Scanner implements IScannerCheck {
             "X-Remote-Addr",
             "X-Forwarded-For",
             "X-Originating-IP",
-            "CF-Connecting_IP",
+            "CF-Connecting-IP",
             "True-Client-IP",
             "Originating-IP",
             "X-Real-IP",
