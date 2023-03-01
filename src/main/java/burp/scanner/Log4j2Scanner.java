@@ -4,18 +4,16 @@ import burp.*;
 import burp.backend.IBackend;
 import burp.backend.platform.*;
 import burp.poc.IPOC;
-import burp.poc.impl.*;
 import burp.ui.tabs.BackendUIHandler;
 import burp.utils.*;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import net.jodah.expiringmap.ExpiringMap;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static burp.ui.tabs.POCUIHandler.defaultEnabledPocIds;
 
@@ -179,7 +177,7 @@ public class Log4j2Scanner implements IScannerCheck {
 
     private void loadConfig() {
         BackendUIHandler.Backends currentBackend = BackendUIHandler.Backends.valueOf(Config.get(Config.CURRENT_BACKEND, BackendUIHandler.Backends.BurpCollaborator.name()));
-        JSONArray enabled_poc_ids = JSONArray.parseArray(Config.get(Config.ENABLED_POC_IDS, JSONObject.toJSONString(defaultEnabledPocIds)));
+        JSONArray enabled_poc_ids = new JSONArray(Config.get(Config.ENABLED_POC_IDS, new JSONArray(defaultEnabledPocIds).toString()));
         try {
             switch (currentBackend) {
                 case Ceye:
@@ -211,7 +209,7 @@ public class Log4j2Scanner implements IScannerCheck {
             }
             List<Integer> enabled_poc_ids_list = new ArrayList<>();
             enabled_poc_ids.forEach(e -> enabled_poc_ids_list.add((int) e));
-            this.pocs = Utils.getPOCs(Arrays.asList(enabled_poc_ids.toArray()).toArray(new Integer[0])).values().toArray(new IPOC[0]);
+            this.pocs = Utils.getPOCs(enabled_poc_ids.toList().toArray(new Integer[0])).values().toArray(new IPOC[0]);
         } catch (Exception ex) {
             parent.stdout.println(ex);
         } finally {
@@ -429,7 +427,7 @@ public class Log4j2Scanner implements IScannerCheck {
         return domainMap;
     }
 
-    private Map<String, ScanItem> headerAdd (IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+    private Map<String, ScanItem> headerAdd(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
         List<String> headers = req.getHeaders();
         Map<String, ScanItem> domainMap = new HashMap<>();
         try {

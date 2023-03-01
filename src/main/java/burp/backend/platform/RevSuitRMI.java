@@ -5,34 +5,30 @@ import burp.poc.IPOC;
 import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class RevSuitRMI implements IBackend {
     OkHttpClient client = new OkHttpClient().newBuilder().cookieJar(new CookieJar() {
-        @Override
-        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-            return;
-        }
+                @Override
+                public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                    return;
+                }
 
-        @Override
-        public List<Cookie> loadForRequest(HttpUrl url) {
-            List<Cookie> cookies = new ArrayList<>();
-            cookies.add(new Cookie.Builder().domain(url.host()).name("token").value(token).build());
-            return cookies;
-        }
-    }).connectTimeout(50, TimeUnit.SECONDS).
+                @Override
+                public List<Cookie> loadForRequest(HttpUrl url) {
+                    List<Cookie> cookies = new ArrayList<>();
+                    cookies.add(new Cookie.Builder().domain(url.host()).name("token").value(token).build());
+                    return cookies;
+                }
+            }).connectTimeout(50, TimeUnit.SECONDS).
             callTimeout(50, TimeUnit.SECONDS).
             readTimeout(3, TimeUnit.MINUTES).build();
     String serverAddr;
@@ -62,7 +58,7 @@ public class RevSuitRMI implements IBackend {
             String flag = Utils.GetRandomString(Utils.GetRandomNumber(5, 10)).toLowerCase();
             createRMIRuleReq.put("flag_format", flag);
             createRMIRuleReq.put("name", String.format("%s Create by Log4j2Scan", flag));
-            JSONObject rmiConfig = JSONObject.parseObject(request("revsuit/api/rule/rmi", "POST", createRMIRuleReq.toString()));
+            JSONObject rmiConfig = new JSONObject(request("revsuit/api/rule/rmi", "POST", createRMIRuleReq.toString()));
             if (rmiConfig.get("status").equals("succeed")) {
                 Utils.Callback.printOutput(String.format("Create RevSuit rmi rule '%s' succeed!\r\n", flag));
                 rmiFlag = flag;
@@ -85,7 +81,7 @@ public class RevSuitRMI implements IBackend {
         try {
             JSONObject findDomainReq = new JSONObject();
             findDomainReq.put("rmis", cleanPayload(payloads));
-            JSONObject foundRecords = JSONObject.parseObject(request("revsuit/api/record/rmi/batchFind", "POST", findDomainReq.toString()));
+            JSONObject foundRecords = new JSONObject(request("revsuit/api/record/rmi/batchFind", "POST", findDomainReq.toString()));
             foundRecords.getJSONArray("found").forEach(f -> found.add(appendBefore((String) f)));
             return found.toArray(new String[0]);
         } catch (Exception ex) {

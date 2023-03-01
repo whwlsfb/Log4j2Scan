@@ -5,10 +5,11 @@ import burp.poc.IPOC;
 import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONObject;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.concurrent.TimeUnit;
 
@@ -36,17 +37,17 @@ public class SelfDigPm implements IBackend {
         try {
             Utils.Callback.printOutput("000");
             Utils.Callback.printOutput("get domain1...");
-            Utils.Callback.printOutput(String.format("platformUrl1: %s",platformUrl));
-            Utils.Callback.printOutput(String.format("Basic token1: %s",token));
-            Response resp = client.newCall(GetDefaultRequest(platformUrl + "get_domain?t=0." + Math.abs(Utils.getRandomLong())).addHeader("Authorization","Basic " + this.token).build()).execute();
+            Utils.Callback.printOutput(String.format("platformUrl1: %s", platformUrl));
+            Utils.Callback.printOutput(String.format("Basic token1: %s", token));
+            Response resp = client.newCall(GetDefaultRequest(platformUrl + "get_domain?t=0." + Math.abs(Utils.getRandomLong())).addHeader("Authorization", "Basic " + this.token).build()).execute();
 
-            String[] rootDomains = JSONObject.parseObject(resp.body().string(), String[].class);
+            String[] rootDomains = new JSONArray(resp.body().string()).toList().toArray(new String[0]);
             rootDomain = rootDomains[0];
-            resp = client.newCall(GetDefaultRequest(platformUrl + "new_gen").post(new FormBody.Builder().add("domain", rootDomains[0]).build()).addHeader("Authorization","Basic " + this.token).build()).execute();
-            JSONObject jobj = JSONObject.parseObject(resp.body().string());
+            resp = client.newCall(GetDefaultRequest(platformUrl + "new_gen").post(new FormBody.Builder().add("domain", rootDomains[0]).build()).addHeader("Authorization", "Basic " + this.token).build()).execute();
+            JSONObject jobj = new JSONObject(resp.body().string());
             userDomain = (String) jobj.get("domain");
             token2 = (String) jobj.get("token");
-            Utils.Callback.printOutput(String.format("Identifier token2: %s",token2));
+            Utils.Callback.printOutput(String.format("Identifier token2: %s", token2));
             userDomain = userDomain.endsWith(".") ? userDomain.substring(0, userDomain.length() - 1) : userDomain;
             Utils.Callback.printOutput(String.format("userDomain: %s", userDomain));
             Utils.Callback.printOutput(String.format("rootDomain: %s", rootDomain));
@@ -99,7 +100,7 @@ public class SelfDigPm implements IBackend {
                     post(new FormBody.Builder().
                             add("domain", rootDomain).
                             add("token", token2)
-                            .build()).addHeader("Authorization","Basic " + this.token).build()).execute();
+                            .build()).addHeader("Authorization", "Basic " + this.token).build()).execute();
             cache = resp.body().string().toLowerCase();
             return true;
         } catch (Exception ex) {
@@ -107,6 +108,7 @@ public class SelfDigPm implements IBackend {
             return false;
         }
     }
+
     @Override
     public boolean getState() {
         return true;

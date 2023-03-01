@@ -5,9 +5,6 @@ import burp.poc.IPOC;
 import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 

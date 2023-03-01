@@ -5,9 +5,6 @@ import burp.poc.IPOC;
 import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
@@ -51,7 +48,6 @@ public class Eyes implements IBackend {
     @Override
     public boolean CheckResult(String payload) {
         try {
-
             String prefixDomain = this.rootDomain.split("\\.")[0];
             String adminDomain = this.rootDomain.replace(prefixDomain+".", "");
             payload = payload.replace("."+this.rootDomain, "");

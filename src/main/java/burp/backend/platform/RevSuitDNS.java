@@ -5,9 +5,9 @@ import burp.poc.IPOC;
 import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -17,18 +17,18 @@ import java.util.concurrent.TimeUnit;
 
 public class RevSuitDNS implements IBackend {
     OkHttpClient client = new OkHttpClient().newBuilder().cookieJar(new CookieJar() {
-        @Override
-        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-            return;
-        }
+                @Override
+                public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                    return;
+                }
 
-        @Override
-        public List<Cookie> loadForRequest(HttpUrl url) {
-            List<Cookie> cookies = new ArrayList<>();
-            cookies.add(new Cookie.Builder().domain(url.host()).name("token").value(token).build());
-            return cookies;
-        }
-    }).connectTimeout(50, TimeUnit.SECONDS).
+                @Override
+                public List<Cookie> loadForRequest(HttpUrl url) {
+                    List<Cookie> cookies = new ArrayList<>();
+                    cookies.add(new Cookie.Builder().domain(url.host()).name("token").value(token).build());
+                    return cookies;
+                }
+            }).connectTimeout(50, TimeUnit.SECONDS).
             callTimeout(50, TimeUnit.SECONDS).
             readTimeout(3, TimeUnit.MINUTES).build();
     String serverAddr;
@@ -58,7 +58,7 @@ public class RevSuitDNS implements IBackend {
             createDNSRuleReq.put("flag_format", flag);
             createDNSRuleReq.put("name", String.format("%s Create by Log4j2Scan", flag));
             createDNSRuleReq.put("value", "127.0.0.1");
-            JSONObject rmiConfig = JSONObject.parseObject(request("revsuit/api/rule/dns", "POST", createDNSRuleReq.toString()));
+            JSONObject rmiConfig = new JSONObject(request("revsuit/api/rule/dns", "POST", createDNSRuleReq.toString()));
             if (rmiConfig.get("status").equals("succeed")) {
                 Utils.Callback.printOutput(String.format("Create RevSuit dns rule '%s' succeed!\r\n", flag));
                 dnsFlag = flag;
@@ -82,8 +82,8 @@ public class RevSuitDNS implements IBackend {
         try {
             JSONObject findDomainReq = new JSONObject();
             findDomainReq.put("domains", payloads);
-            JSONObject foundRecords = JSONObject.parseObject(request("revsuit/api/record/dns/batchFind", "POST", findDomainReq.toString()));
-            return foundRecords.getJSONArray("found").toArray(new String[0]);
+            JSONObject foundRecords = new JSONObject(request("revsuit/api/record/dns/batchFind", "POST", findDomainReq.toString()));
+            return foundRecords.getJSONArray("found").toList().toArray(new String[0]);
         } catch (Exception ex) {
             return null;
         }

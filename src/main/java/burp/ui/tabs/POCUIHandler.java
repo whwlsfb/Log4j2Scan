@@ -5,15 +5,11 @@ import burp.poc.IPOC;
 import burp.utils.CheckBoxListItem;
 import burp.utils.Config;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import org.json.JSONArray;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,9 +61,9 @@ public class POCUIHandler {
             List<Map.Entry<Integer, IPOC>> ava_pocs = (List<Map.Entry<Integer, IPOC>>) pocList.getSelectedValuesList();
             JSONArray pocIds = new JSONArray();
             for (Map.Entry<Integer, IPOC> poc : ava_pocs) {
-                pocIds.add(poc.getKey());
+                pocIds.put(poc.getKey());
             }
-            Config.set(Config.ENABLED_POC_IDS, pocIds.toJSONString());
+            Config.set(Config.ENABLED_POC_IDS, pocIds.toString());
             this.loadConfig();
             this.apply();
         });
@@ -88,7 +84,7 @@ public class POCUIHandler {
     }
 
     private void loadConfig() {
-        JSONArray enabled_poc_ids = JSONArray.parseArray(Config.get(Config.ENABLED_POC_IDS, JSONObject.toJSONString(defaultEnabledPocIds)));
+        JSONArray enabled_poc_ids = new JSONArray(Config.get(Config.ENABLED_POC_IDS, new JSONArray(defaultEnabledPocIds).toString()));
         pocList.setListData(allPocs.entrySet().toArray());
         for (Object id : enabled_poc_ids) {
             pocList.setSelectedIndex((int) id - 1);

@@ -5,10 +5,10 @@ import burp.poc.IPOC;
 import burp.utils.Config;
 import burp.utils.HttpUtils;
 import burp.utils.Utils;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.math.BigInteger;
 import java.util.Map;
@@ -81,9 +81,10 @@ public class GoDnslog implements IBackend {
         String hash = getSign("q=" + query + "&t=" + timeStamp + "&blur=1");
         try {
             Response resp = client.newCall(HttpUtils.GetDefaultRequest(getAdminUrl() + "/data/dns?q=" + query + "&t=" + timeStamp + "&blur=1" + "&hash=" + hash).build()).execute();
-            JSONObject jObj = JSONObject.parseObject(resp.body().string().toLowerCase());
-            if (jObj.containsKey("result")) {
-                return (((JSONArray) jObj.get("result")).size() > 0);
+
+            JSONObject jObj =  new JSONObject(resp.body().string().toLowerCase());
+            if (jObj.has("result")) {
+                return (((JSONArray) jObj.get("result")).length() > 0);
             }
         } catch (Exception ex) {
             System.out.println(ex);

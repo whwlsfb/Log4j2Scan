@@ -45,11 +45,11 @@
             <artifactId>okhttp</artifactId>
             <version>4.9.3</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.83</version>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20230227</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/net.jodah/expiringmap -->
         <dependency>
