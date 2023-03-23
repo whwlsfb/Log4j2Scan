@@ -17,7 +17,7 @@ public class POCUIHandler {
 
     private BurpExtender parent;
     private JPanel mainPanel;
-    private Integer[] pocRange = new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    private Integer[] pocRange = new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     public static final Integer[] defaultEnabledPocIds = new Integer[]{1, 2, 3, 4, 11};
     private JList pocList;
     Map<Integer, IPOC> allPocs;
