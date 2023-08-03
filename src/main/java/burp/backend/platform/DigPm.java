@@ -30,21 +30,25 @@ public class DigPm implements IBackend {
     }
 
     private void initDomain() {
+        String respStr = null;
         try {
             Utils.Callback.printOutput("get domain...");
             Response resp = client.newCall(GetDefaultRequest(platformUrl + "get_domain?t=0." + Math.abs(Utils.getRandomLong())).build()).execute();
-
-            String[] rootDomains = new JSONArray(resp.body().string()).toList().toArray(new String[0]);
+            respStr = resp.body().string();
+            String[] rootDomains = new JSONArray(respStr).toList().toArray(new String[0]);
             rootDomain = rootDomains[0];
-            resp = client.newCall(GetDefaultRequest(platformUrl + "new_gen").post(new FormBody.Builder().add("domain", rootDomains[0]).build()).build()).execute();
-            JSONObject jobj = new JSONObject(resp.body().string());
-            userDomain = (String) jobj.get("domain");
+            resp = client.newCall(GetDefaultRequest(platformUrl + "get_sub_domain").post(new FormBody.Builder().add("mainDomain", rootDomains[0]).build()).build()).execute();
+            respStr = resp.body().string();
+            JSONObject jobj = new JSONObject(respStr);
+            userDomain = (String) jobj.get("subDomain");
             token = (String) jobj.get("token");
             userDomain = userDomain.endsWith(".") ? userDomain.substring(0, userDomain.length() - 1) : userDomain;
-            Utils.Callback.printOutput(String.format("Domain: %s/%s", userDomain, rootDomain));
-            Utils.Callback.printOutput(String.format("ShareLink: https://dig.pm/?domain=%s&token=%s&key=%s.", rootDomain, token, userDomain));
+            Utils.Callback.printOutput(String.format("Domain: %s.%s", userDomain, rootDomain));
+            Utils.Callback.printOutput(String.format("ShareLink: https://dig.pm/?mainDomain=%s&token=%s&subDomain=%s", rootDomain, token, userDomain));
         } catch (Exception ex) {
             Utils.Callback.printError("initDomain failed: " + ex.getMessage());
+            if (respStr != null)
+                Utils.Callback.printError("RespStr: " + respStr);
         }
     }
 
@@ -88,7 +92,8 @@ public class DigPm implements IBackend {
         try {
             Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "get_results").
                     post(new FormBody.Builder().
-                            add("domain", rootDomain).
+                            add("subDomain", userDomain).
+                            add("mainDomain", rootDomain).
                             add("token", token)
                             .build()).build()).execute();
             cache = resp.body().string().toLowerCase();
