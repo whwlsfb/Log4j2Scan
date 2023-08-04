@@ -69,7 +69,7 @@ public class DigPm implements IBackend {
 
     @Override
     public String getNewPayload() {
-        return Utils.getCurrentTimeMillis() + Utils.GetRandomString(5).toLowerCase() + "." + userDomain;
+        return Utils.getCurrentTimeMillis() + Utils.GetRandomString(5).toLowerCase() + "." + userDomain + "." + rootDomain;
     }
 
     @Override
